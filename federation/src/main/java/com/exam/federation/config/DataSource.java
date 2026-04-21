@@ -3,9 +3,15 @@ package com.exam.federation.config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
+import io.github.cdimascio.dotenv.Dotenv;
 public class DataSource {
-        public Connection getConnection() {
+            private final Dotenv dotenv;
+             public DataSource() {
+                this.dotenv = Dotenv.configure()
+                        .ignoreIfMissing()
+                        .load();
+            }
+            public Connection getConnection() {
             try {
                 String jdbcURl = System.getenv("JDBC_URl");
                 String user = System.getenv("USERNAME");
@@ -23,6 +29,5 @@ public class DataSource {
                     throw new RuntimeException(e);
                 }
             }
-        }
     }
 }
