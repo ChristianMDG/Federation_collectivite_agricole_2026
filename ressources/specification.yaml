@@ -905,6 +905,117 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /collectivites/{collectiviteId}/activites/{activiteId}/presences:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - $ref: '#/components/parameters/ActiviteId'
+    get:
+      tags: [Assiduité]
+      summary: Consulter la fiche de présence d'une activité
+      operationId: getFichePresence
+      responses:
+        '200':
+          description: Fiche de présence de l'activité
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FichePresence'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Assiduité]
+      summary: Ouvrir ou soumettre la fiche de présence d'une activité
+      description: |
+        Le secrétaire initie ou soumet la fiche de présence. Les membres peuvent être
+        marqués présents, absents ou excusés (si le secrétaire a été prévenu à l'avance).
+        Les membres d'autres collectivités peuvent être inscrits mais leur présence
+        n'est pas comptabilisée dans leur taux d'assiduité.
+      operationId: soumettrePresences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresencesRequest'
+      responses:
+        '201':
+          description: Fiche de présence enregistrée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FichePresence'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Une fiche de présence existe déjà pour cette activité
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags: [Assiduité]
+      summary: Mettre à jour la fiche de présence (ajouter/modifier des entrées)
+      operationId: updateFichePresence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresencesRequest'
+      responses:
+        '200':
+          description: Fiche de présence mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FichePresence'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /federation/activites/{activiteId}/presences:
+    parameters:
+      - $ref: '#/components/parameters/ActiviteId'
+    get:
+      tags: [Assiduité]
+      summary: Consulter la fiche de présence d'une activité fédérale
+      operationId: getFichePresenceFederation
+      responses:
+        '200':
+          description: Fiche de présence de l'activité fédérale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FichePresence'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Assiduité]
+      summary: Soumettre la fiche de présence d'une activité fédérale
+      operationId: soumettrePresencesFederation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresencesRequest'
+      responses:
+        '201':
+          description: Fiche de présence enregistrée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FichePresence'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
  
  components:
  
