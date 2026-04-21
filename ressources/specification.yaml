@@ -1250,4 +1250,124 @@ components:
       type: string
       enum: [present, absent, excuse]
 
+    Collectivite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        numero:
+          type: string
+          description: Numéro unique de la collectivité
+          example: "COLL-001"
+        nom:
+          type: string
+          description: Nom unique de la collectivité
+          example: "Collectivité Riziculteurs Antananarivo"
+        ville:
+          type: string
+          example: "Antananarivo"
+        specialiteAgricole:
+          type: string
+          example: "Riziculture"
+        dateCreation:
+          type: string
+          format: date
+          readOnly: true
+        statut:
+          type: string
+          enum: [en_attente, autorisee, rejetee, active, inactive]
+          readOnly: true
+        nombreMembres:
+          type: integer
+          readOnly: true
+      required:
+        - nom
+        - ville
+        - specialiteAgricole
+
+    CollectiviteCreationRequest:
+      type: object
+      required:
+        - nom
+        - ville
+        - specialiteAgricole
+        - membresInitiaux
+        - postesInitiaux
+      properties:
+        nom:
+          type: string
+        ville:
+          type: string
+        specialiteAgricole:
+          type: string
+        membresInitiaux:
+          type: array
+          description: Liste des IDs de membres existants (min 10, ancienneté ≥ 6 mois)
+          minItems: 10
+          items:
+            type: string
+            format: uuid
+        postesInitiaux:
+          $ref: '#/components/schemas/PostesInitiaux'
+
+    CollectiviteUpdateRequest:
+      type: object
+      properties:
+        nom:
+          type: string
+        ville:
+          type: string
+        specialiteAgricole:
+          type: string
+
+    PostesInitiaux:
+      type: object
+      description: Membres occupant les postes spécifiques lors de la création
+      required:
+        - presidentId
+        - presidentAdjointId
+        - tresorierIid
+        - secretaireId
+      properties:
+        presidentId:
+          type: string
+          format: uuid
+        presidentAdjointId:
+          type: string
+          format: uuid
+        tresorierIid:
+          type: string
+          format: uuid
+        secretaireId:
+          type: string
+          format: uuid
+
+    AutorisationRequest:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          type: string
+          enum: [autorisee, rejetee]
+        motif:
+          type: string
+          description: Motif de refus (obligatoire si rejetee)
+
+    PagedCollectivites:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Collectivite'
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+
   
