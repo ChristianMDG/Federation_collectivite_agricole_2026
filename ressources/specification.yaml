@@ -1199,3 +1199,55 @@ components:
         default: 20
         minimum: 1
         maximum: 100
+
+  schemas:
+
+    Poste:
+      type: string
+      enum:
+        - president
+        - president_adjoint
+        - tresorier
+        - secretaire
+        - membre_confirme
+        - membre_junior
+      description: Poste occupé par un membre dans une collectivité
+
+    Genre:
+      type: string
+      enum: [masculin, feminin]
+
+    ModePaiement:
+      type: string
+      enum: [espece, virement_bancaire, mobile_money]
+
+    TypeCotisation:
+      type: string
+      enum: [mensuelle, annuelle, ponctuelle]
+      description: Périodicité ou nature de la cotisation
+
+    TypeCompte:
+      type: string
+      enum: [caisse, bancaire, mobile_money]
+
+    BanqueName:
+      type: string
+      enum: [BRED, MCB, BMOI, BOA, BGFI, AFG, ACCES_BANQUE, BAOBAB, SIPEM]
+
+    ServiceMobileMoney:
+      type: string
+      enum: [Orange_Money, Mvola, Airtel_Money]
+
+    TypeActivite:
+      type: string
+      enum:
+        - assemblee_generale_mensuelle
+        - formation_juniors
+        - exceptionnelle
+        - federale
+
+    StatutPresence:
+      type: string
+      enum: [present, absent, excuse]
+
+  
