@@ -30,3 +30,223 @@ tags:
     description: "G - Statistiques et rapports"
 
 paths:
+
+  /collectivites:
+    get:
+      tags: [Collectivités]
+      summary: Lister toutes les collectivités
+      operationId: listCollectivites
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: ville
+          in: query
+          description: Filtrer par ville
+          schema:
+            type: string
+        - name: specialite
+          in: query
+          description: Filtrer par spécialité agricole
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des collectivités
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCollectivites'
+ 
+    post:
+      tags: [Collectivités]
+      summary: Soumettre une demande d'ouverture d'une nouvelle collectivité
+      description: |
+        Soumet une demande d'ouverture de collectivité. La fédération devra accorder
+        une autorisation formelle. La collectivité doit avoir au moins 10 membres
+        avec une antériorité d'au moins 6 mois et les postes spécifiques doivent être pourvus.
+      operationId: demanderOuvertureCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectiviteCreationRequest'
+      responses:
+        '201':
+          description: Demande d'ouverture enregistrée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collectivite'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+ 
+  /collectivites/{collectiviteId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    get:
+      tags: [Collectivités]
+      summary: Obtenir les détails d'une collectivité
+      operationId: getCollectivite
+      responses:
+        '200':
+          description: Détails de la collectivité
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collectivite'
+        '404':
+          $ref: '#/components/responses/NotFound'
+ 
+    patch:
+      tags: [Collectivités]
+      summary: Modifier les informations d'une collectivité
+      operationId: updateCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectiviteUpdateRequest'
+      responses:
+        '200':
+          description: Collectivité mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collectivite'
+        '404':
+          $ref: '#/components/responses/NotFound'
+ 
+  /collectivites/{collectiviteId}/autorisation:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    post:
+      tags: [Collectivités]
+      summary: Accorder ou refuser l'autorisation d'ouverture (fédération)
+      operationId: statueSurAutorisationCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutorisationRequest'
+      responses:
+        '200':
+          description: Décision enregistrée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collectivite'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+ 
+  /collectivites/{collectiviteId}/mandats:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    get:
+      tags: [Collectivités]
+      summary: Lister les mandats d'une collectivité
+      operationId: listMandatsCollectivite
+      parameters:
+        - name: annee
+          in: query
+          schema:
+            type: integer
+          description: Filtrer par année civile
+      responses:
+        '200':
+          description: Liste des mandats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Mandat'
+        '404':
+          $ref: '#/components/responses/NotFound'
+ 
+    post:
+      tags: [Collectivités]
+      summary: Créer un nouveau mandat (suite aux votes de fin d'année)
+      operationId: creerMandatCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MandatCreationRequest'
+      responses:
+        '201':
+          description: Mandat créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mandat'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+ 
+ components:
+ 
+
+  parameters:
+    CollectiviteId:
+      name: collectiviteId
+      in: path
+      required: true
+      description: Identifiant unique de la collectivité
+      schema:
+        type: string
+        format: uuid
+ 
+    MembreId:
+      name: membreId
+      in: path
+      required: true
+      description: Identifiant unique du membre
+      schema:
+        type: string
+        format: uuid
+ 
+    CompteId:
+      name: compteId
+      in: path
+      required: true
+      description: Identifiant unique du compte
+      schema:
+        type: string
+        format: uuid
+ 
+    ActiviteId:
+      name: activiteId
+      in: path
+      required: true
+      description: Identifiant unique de l'activité
+      schema:
+        type: string
+        format: uuid
+ 
+    PageParam:
+      name: page
+      in: query
+      description: Numéro de page (commence à 1)
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+ 
+    LimitParam:
+      name: limit
+      in: query
+      description: Nombre d'éléments par page
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
