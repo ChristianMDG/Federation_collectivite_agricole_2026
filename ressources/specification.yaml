@@ -1787,4 +1787,127 @@ components:
           type: string
           format: date
 
+    Activite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/TypeActivite'
+        titre:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        lieu:
+          type: string
+        presenceObligatoire:
+          type: boolean
+          description: Vrai si la présence est obligatoire pour tous les membres concernés
+        membresConvoquesIds:
+          type: array
+          description: Si null ou vide, s'applique à tous les membres
+          items:
+            type: string
+            format: uuid
+        collectiviteId:
+          type: string
+          format: uuid
+          description: Null si activité fédérale
+        recurrence:
+          $ref: '#/components/schemas/Recurrence'
+
+    Recurrence:
+      type: object
+      description: Définit le pattern de récurrence annuelle d'une activité
+      properties:
+        jourDeLaSemaine:
+          type: string
+          enum: [lundi, mardi, mercredi, jeudi, vendredi, samedi, dimanche]
+        numeroSemaineDuMois:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: "Ex: 2 = deuxième semaine du mois"
+
+    ActiviteCreationRequest:
+      type: object
+      required:
+        - type
+        - titre
+        - date
+      properties:
+        type:
+          $ref: '#/components/schemas/TypeActivite'
+        titre:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        lieu:
+          type: string
+        presenceObligatoire:
+          type: boolean
+          default: true
+        membresConvoquesIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Laisser vide pour convoquer tous les membres
+        recurrence:
+          $ref: '#/components/schemas/Recurrence'
+
+    ActiviteFederaleCreationRequest:
+      allOf:
+        - $ref: '#/components/schemas/ActiviteCreationRequest'
+        - type: object
+          properties:
+            collectivitesInviteesIds:
+              type: array
+              description: IDs des collectivités invitées. Vide = toutes les collectivités
+              items:
+                type: string
+                format: uuid
+
+    ActiviteUpdateRequest:
+      type: object
+      properties:
+        titre:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        lieu:
+          type: string
+        presenceObligatoire:
+          type: boolean
+        membresConvoquesIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    PagedActivites:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Activite'
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+
   
