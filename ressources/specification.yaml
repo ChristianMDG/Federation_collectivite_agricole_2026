@@ -1015,6 +1015,133 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /collectivites/{collectiviteId}/statistiques/rapport-mensuel:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    get:
+      tags: [Statistiques]
+      summary: Obtenir le rapport mensuel d'une collectivité (pour la fédération)
+      description: |
+        Le président soumet un rapport mensuel à la fédération incluant le taux
+        d'assiduité global et le nombre de membres inscrits.
+      operationId: getRapportMensuelCollectivite
+      parameters:
+        - name: annee
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2025
+        - name: mois
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+            example: 4
+      responses:
+        '200':
+          description: Rapport mensuel de la collectivité
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RapportMensuel'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /collectivites/{collectiviteId}/statistiques/membres:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    get:
+      tags: [Statistiques]
+      summary: Obtenir les statistiques détaillées par membre actif
+      description: |
+        Réservé au président de la collectivité. Retourne pour chaque membre actif :
+        le taux d'assiduité, les encaissements et les impayés potentiels sur une période.
+      operationId: getStatistiquesMembres
+      parameters:
+        - name: dateDebut
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2025-01-01"
+        - name: dateFin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2025-03-31"
+      responses:
+        '200':
+          description: Statistiques détaillées par membre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatistiquesMembres'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /collectivites/{collectiviteId}/statistiques/membres/{membreId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - $ref: '#/components/parameters/MembreId'
+    get:
+      tags: [Statistiques]
+      summary: Obtenir les statistiques détaillées d'un membre actif spécifique
+      operationId: getStatistiquesMembre
+      parameters:
+        - name: dateDebut
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: dateFin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Statistiques du membre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatistiquesMembreDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /federation/statistiques/collectivites:
+    get:
+      tags: [Statistiques]
+      summary: Synthèse des rapports mensuels de toutes les collectivités (fédération)
+      operationId: getSyntheseCollectivites
+      parameters:
+        - name: annee
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: mois
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        '200':
+          description: Synthèse des collectivités pour le mois donné
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyntheseCollectivites'
+
 
  
  components:
