@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  description: "# Versioning\nThis API uses semantic versioning (MAJOR.MINOR.PATCH).\
+    \ Available versions are : \n- v0.0.1 (2026-04-21) : POST /collectivities for\
+    \ collectivities creation and POST /members for members creation.\n"
+  title: Agricultural federation API
+  version: 0.0.1
+servers:
+- url: https://localhost:8080
+paths:
+  /collectivities:
+    post:
+      description: "During collectivity request body creation, only members ID are\
+        \ provided to identify members. \nBut the response content includes members\
+        \ information, not only their IDs.\n"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/CreateCollectivity'
+              type: array
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Collectivity'
+                type: array
+          description: List of created collectivities
+        "400":
+          description: Collectivity without federation approval or structure missing.
+        "404":
+          description: Member not found.
+      summary: Create list of collectivities
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /members:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/CreateMember'
+              type: array
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Member'
+                type: array
+          description: List of created members
+        "400":
+          description: "The following case must return a bad request exception : \n\
+            - Member with bad referees or without proper payment.\n- Membership dues\
+            \ not paid or registration fee not paid.\n"
+        "404":
+          description: Either collectivity or member not found.
+      summary: Create list of members
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+components:
+  schemas:
+    CreateCollectivity:
+      example:
+        federationApproval: true
+        members:
+        - ""
+        - ""
+        location: location
+        structure:
+          secretary: secretary
+          vicePresident: vicePresident
+          treasurer: treasurer
+          president: president
+      properties:
+        location:
+          type: string
+        members:
+          items: {}
+          type: array
+        federationApproval:
+          type: boolean
+        structure:
+          $ref: '#/components/schemas/CreateCollectivityStructure'
+    CreateCollectivityStructure:
+      example:
+        secretary: secretary
+        vicePresident: vicePresident
+        treasurer: treasurer
+        president: president
+      properties:
+        president:
+          type: string
+        vicePresident:
+          type: string
+        treasurer:
+          type: string
+        secretary:
+          type: string
+    CollectivityStructure:
+      example:
+        secretary:
+          id: id
+          referees:
+          - null
+          - null
+        vicePresident:
+          id: id
+          referees:
+          - null
+          - null
+        treasurer:
+          id: id
+          referees:
+          - null
+          - null
+        president:
+          id: id
+          referees:
+          - null
+          - null
+      properties:
+        president:
+          $ref: '#/components/schemas/Member'
+        vicePresident:
+          $ref: '#/components/schemas/Member'
+        treasurer:
+          $ref: '#/components/schemas/Member'
+        secretary:
+          $ref: '#/components/schemas/Member'
+    Collectivity:
+      example:
+        members:
+        - id: id
+          referees:
+          - null
+          - null
+        - id: id
+          referees:
+          - null
+          - null
+        location: location
+        id: id
+        structure:
+          secretary:
+            id: id
+            referees:
+            - null
+            - null
+          vicePresident:
+            id: id
+            referees:
+            - null
+            - null
+          treasurer:
+            id: id
+            referees:
+            - null
+            - null
+          president:
+            id: id
+            referees:
+            - null
+            - null
+      properties:
+        id:
+          type: string
+        location:
+          type: string
+        structure:
+          $ref: '#/components/schemas/CollectivityStructure'
+        members:
+          items:
+            $ref: '#/components/schemas/Member'
+          type: array
+    MemberIdentifier:
+      type: string
+    CreateMember:
+      allOf:
+      - $ref: '#/components/schemas/MemberInformation'
+      example:
+        collectivityIdentifier: collectivityIdentifier
+        membershipDuesPaid: true
+        registrationFeePaid: true
+        referees:
+        - null
+        - null
+      properties:
+        collectivityIdentifier: {}
+        referees:
+          items:
+            $ref: '#/components/schemas/MemberIdentifier'
+        registrationFeePaid: {}
+        membershipDuesPaid: {}
+    MemberInformation:
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          format: date
+          type: string
+        gender:
+          $ref: '#/components/schemas/Gender'
+        address:
+          type: string
+        profession:
+          type: string
+        phoneNumber:
+          type: int
+        email:
+          type: string
+        occupation:
+          $ref: '#/components/schemas/MemberOccupation'
+    Member:
+      allOf:
+      - $ref: '#/components/schemas/MemberInformation'
+      example:
+        id: id
+        referees:
+        - null
+        - null
+      properties:
+        id:
+          type: string
+        referees:
+          items:
+            $ref: '#/components/schemas/Member'
+    Gender:
+      enum:
+      - MALE
+      - FEMALE
+      type: string
+    MemberOccupation:
+      enum:
+      - JUNIOR
+      - SENIOR
+      - SECRETARY
+      - TREASURER
+      - VICE_PRESIDENT
+      - PRESIDENT
+      type: string
+
