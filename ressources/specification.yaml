@@ -1574,4 +1574,110 @@ components:
         total:
           type: integer
 
+    Cotisation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        membreId:
+          type: string
+          format: uuid
+        collectiviteId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/TypeCotisation'
+        montant:
+          type: number
+          example: 10000
+        devise:
+          type: string
+          default: MGA
+        dateEncaissement:
+          type: string
+          format: date-time
+        modePaiement:
+          $ref: '#/components/schemas/ModePaiement'
+        reference:
+          type: string
+          description: Référence de transaction (mobile money ou virement)
+        description:
+          type: string
+          description: Motif pour les cotisations ponctuelles
+
+    CotisationRequest:
+      type: object
+      required:
+        - membreId
+        - type
+        - montant
+        - dateEncaissement
+        - modePaiement
+      properties:
+        membreId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/TypeCotisation'
+        montant:
+          type: number
+          minimum: 0
+        devise:
+          type: string
+          default: MGA
+        dateEncaissement:
+          type: string
+          format: date-time
+        modePaiement:
+          $ref: '#/components/schemas/ModePaiement'
+        reference:
+          type: string
+        description:
+          type: string
+          description: Requis pour les cotisations ponctuelles
+
+    PagedCotisations:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cotisation'
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+
+    Reversement:
+      type: object
+      description: Reversement d'un pourcentage des cotisations périodiques à la fédération
+      properties:
+        id:
+          type: string
+          format: uuid
+        collectiviteId:
+          type: string
+          format: uuid
+        montant:
+          type: number
+        devise:
+          type: string
+          default: MGA
+        pourcentage:
+          type: number
+          description: Pourcentage appliqué sur les cotisations périodiques
+        dateReversement:
+          type: string
+          format: date
+        periodeDebut:
+          type: string
+          format: date
+        periodeFin:
+          type: string
+          format: date
+
   
