@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FederationApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(FederationApplication.class, args);
-	}
 
+        SpringApplication.run(FederationApplication.class, args);
+	}
 }
