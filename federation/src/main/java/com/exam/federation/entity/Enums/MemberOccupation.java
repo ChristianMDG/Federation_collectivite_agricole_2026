@@ -1,4 +1,4 @@
-package com.exam.federation.entity.Enum;
+package com.exam.federation.entity.Enums;
 
 public enum MemberOccupation {
     JUNIOR,
