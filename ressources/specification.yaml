@@ -191,6 +191,160 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
+
+   /collectivites/{collectiviteId}/membres:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    get:
+      tags: [Membres]
+      summary: Lister les membres d'une collectivité
+      operationId: listMembresCollectivite
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: poste
+          in: query
+          description: Filtrer par poste
+          schema:
+            $ref: '#/components/schemas/Poste'
+        - name: statut
+          in: query
+          description: Filtrer par statut (actif / démissionnaire)
+          schema:
+            type: string
+            enum: [actif, demissionnaire]
+      responses:
+        '200':
+          description: Liste des membres
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedMembres'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Membres]
+      summary: Admettre un nouveau membre dans une collectivité
+      description: |
+        Admet un nouveau membre. Le membre doit être parrainé par un membre confirmé
+        ayant plus de 90 jours d'ancienneté, fournir ses informations personnelles et
+        régler les frais d'adhésion de 50 000 MGA.
+      operationId: admettreMembreCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembreAdmissionRequest'
+      responses:
+        '201':
+          description: Membre admis avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membre'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /collectivites/{collectiviteId}/membres/{membreId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - $ref: '#/components/parameters/MembreId'
+    get:
+      tags: [Membres]
+      summary: Obtenir les détails d'un membre dans une collectivité
+      operationId: getMembreCollectivite
+      responses:
+        '200':
+          description: Détails du membre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membre'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Membres]
+      summary: Mettre à jour les informations personnelles d'un membre
+      operationId: updateMembreCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembreUpdateRequest'
+      responses:
+        '200':
+          description: Membre mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membre'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /collectivites/{collectiviteId}/membres/{membreId}/transfert:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - $ref: '#/components/parameters/MembreId'
+    post:
+      tags: [Membres]
+      summary: Transférer un membre vers une autre collectivité
+      operationId: transfererMembre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransfertRequest'
+      responses:
+        '200':
+          description: Transfert effectué avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membre'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /collectivites/{collectiviteId}/membres/{membreId}/demission:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - $ref: '#/components/parameters/MembreId'
+    post:
+      tags: [Membres]
+      summary: Enregistrer la démission d'un membre
+      operationId: enregistrerDemission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motif:
+                  type: string
+                  description: Motif de démission
+                dateDemission:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Démission enregistrée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membre'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
  
  components:
  
