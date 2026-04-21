@@ -471,7 +471,238 @@ paths:
                       $ref: '#/components/schemas/Reversement'
                   total:
                     type: integer
+  /collectivites/{collectiviteId}/comptes:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    get:
+      tags: [Trésorerie]
+      summary: Lister les comptes d'une collectivité
+      operationId: listComptesCollectivite
+      parameters:
+        - name: type
+          in: query
+          description: Filtrer par type de compte
+          schema:
+            $ref: '#/components/schemas/TypeCompte'
+      responses:
+        '200':
+          description: Liste des comptes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Compte'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
+    post:
+      tags: [Trésorerie]
+      summary: Ajouter un nouveau compte à une collectivité
+      description: |
+        Une collectivité ne peut avoir qu'un seul compte de type caisse,
+        mais plusieurs comptes bancaires et mobile money.
+      operationId: creerCompteCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompteCreationRequest'
+      responses:
+        '201':
+          description: Compte créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Conflit – une caisse existe déjà pour cette collectivité
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /collectivites/{collectiviteId}/comptes/{compteId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - $ref: '#/components/parameters/CompteId'
+    get:
+      tags: [Trésorerie]
+      summary: Obtenir les détails d'un compte
+      operationId: getCompteCollectivite
+      responses:
+        '200':
+          description: Détails du compte
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Trésorerie]
+      summary: Mettre à jour les informations d'un compte
+      operationId: updateCompteCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompteUpdateRequest'
+      responses:
+        '200':
+          description: Compte mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Trésorerie]
+      summary: Supprimer un compte
+      operationId: supprimerCompteCollectivite
+      responses:
+        '204':
+          description: Compte supprimé
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Impossible de supprimer un compte avec un solde non nul
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /collectivites/{collectiviteId}/comptes/{compteId}/solde:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - $ref: '#/components/parameters/CompteId'
+    get:
+      tags: [Trésorerie]
+      summary: Consulter le solde d'un compte à une date donnée
+      operationId: getSoldeCompteCollectivite
+      parameters:
+        - name: date
+          in: query
+          description: Date à laquelle consulter le solde (défaut = aujourd'hui)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Solde du compte
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoldeCompte'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /federation/comptes:
+    get:
+      tags: [Trésorerie]
+      summary: Lister les comptes de la fédération
+      operationId: listComptesFederation
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/TypeCompte'
+      responses:
+        '200':
+          description: Liste des comptes de la fédération
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Compte'
+
+    post:
+      tags: [Trésorerie]
+      summary: Ajouter un compte à la fédération
+      operationId: creerCompteFederation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompteCreationRequest'
+      responses:
+        '201':
+          description: Compte créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /federation/comptes/{compteId}:
+    parameters:
+      - $ref: '#/components/parameters/CompteId'
+    get:
+      tags: [Trésorerie]
+      summary: Obtenir les détails d'un compte de la fédération
+      operationId: getCompteFederation
+      responses:
+        '200':
+          description: Détails du compte
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Trésorerie]
+      summary: Mettre à jour un compte de la fédération
+      operationId: updateCompteFederation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompteUpdateRequest'
+      responses:
+        '200':
+          description: Compte mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /federation/comptes/{compteId}/solde:
+    parameters:
+      - $ref: '#/components/parameters/CompteId'
+    get:
+      tags: [Trésorerie]
+      summary: Consulter le solde d'un compte de la fédération à une date donnée
+      operationId: getSoldeCompteFederation
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Solde du compte
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoldeCompte'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
  
  components:
