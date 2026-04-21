@@ -2036,5 +2036,74 @@ components:
           items:
             $ref: '#/components/schemas/RapportMensuel'
 
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
+      required:
+        - code
+        - message
+
+  # -------------------------------------------------------------------------
+  # RESPONSES
+  # -------------------------------------------------------------------------
+  responses:
+    BadRequest:
+      description: Requête invalide – données manquantes ou incorrectes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: INVALID_REQUEST
+            message: "Le champ 'email' est invalide."
+
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: NOT_FOUND
+            message: "La ressource demandée est introuvable."
+
+    Conflict:
+      description: Conflit avec l'état actuel de la ressource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: CONFLICT
+            message: "Une ressource similaire existe déjà."
+
+    UnprocessableEntity:
+      description: Entité non traitable – règles métier non respectées
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: BUSINESS_RULE_VIOLATION
+            message: "Le parrain n'a pas l'ancienneté requise de 90 jours."
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+
 
   
