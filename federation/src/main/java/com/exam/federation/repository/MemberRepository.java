@@ -5,6 +5,7 @@ import com.exam.federation.dto.CreateMember;
 import com.exam.federation.dto.MemberResponse;
 import com.exam.federation.entity.Enums.Gender;
 import com.exam.federation.entity.Enums.MemberOccupation;
+import com.exam.federation.entity.Member;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -190,5 +191,43 @@ public class MemberRepository {
         }
 
         return referees;
+    }
+
+    public Member findById(String id) {
+
+        try (Connection conn = dataSource.getConnection()) {
+
+            PreparedStatement ps = conn.prepareStatement("""
+            SELECT id, first_name, last_name, birth_date, gender,
+                   address, profession, phone_number, email, occupation
+            FROM member
+            WHERE id = ?
+        """);
+
+            ps.setString(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Member member = new Member();
+                member.setId(rs.getString("id"));
+                member.setFirstName(rs.getString("first_name"));
+                member.setLastName(rs.getString("last_name"));
+                member.setBirthDate(rs.getDate("birth_date").toLocalDate());
+                member.setGender(Gender.valueOf(rs.getString("gender")));
+                member.setAddress(rs.getString("address"));
+                member.setProfession(rs.getString("profession"));
+                member.setPhoneNumber(rs.getString("phone_number"));
+                member.setEmail(rs.getString("email"));
+                member.setOccupation(MemberOccupation.valueOf(rs.getString("occupation")));
+
+                return member;
+            }
+
+            throw new RuntimeException("Member with id " + id + " not found");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

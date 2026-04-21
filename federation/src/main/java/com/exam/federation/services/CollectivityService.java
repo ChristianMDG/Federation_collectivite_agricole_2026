@@ -63,7 +63,12 @@ public class CollectivityService {
     }
 
     private Member getMember(String id) {
-        return memberRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Member " + id + " not found"));
+        Member member = memberRepository.findById(id);
+
+        if (member == null) {
+            throw new RuntimeException("Member " + id + " not found");
+        }
+
+        return member;
     }
 }
