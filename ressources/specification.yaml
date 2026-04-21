@@ -1797,7 +1797,6 @@ components:
           type: string
           format: date
 
-    # ---- ACTIVITÉS ----
     Activite:
       type: object
       properties:
