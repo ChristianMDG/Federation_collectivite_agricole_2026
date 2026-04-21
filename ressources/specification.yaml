@@ -704,6 +704,207 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /collectivites/{collectiviteId}/activites:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    get:
+      tags: [Activités]
+      summary: Lister les activités d'une collectivité
+      operationId: listActivitesCollectivite
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/TypeActivite'
+        - name: dateDebut
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateFin
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Liste des activités
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedActivites'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Activités]
+      summary: Planifier une activité pour une collectivité
+      description: |
+        Permet de créer une activité (assemblée générale mensuelle, formation juniors
+        ou activité exceptionnelle). Pour les activités obligatoires récurrentes,
+        un jour fixe annuel peut être défini.
+      operationId: planifierActiviteCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActiviteCreationRequest'
+      responses:
+        '201':
+          description: Activité planifiée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activite'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /collectivites/{collectiviteId}/activites/{activiteId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - $ref: '#/components/parameters/ActiviteId'
+    get:
+      tags: [Activités]
+      summary: Obtenir les détails d'une activité
+      operationId: getActiviteCollectivite
+      responses:
+        '200':
+          description: Détails de l'activité
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activite'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Activités]
+      summary: Modifier une activité planifiée
+      operationId: updateActiviteCollectivite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActiviteUpdateRequest'
+      responses:
+        '200':
+          description: Activité mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activite'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Activités]
+      summary: Annuler une activité planifiée
+      operationId: annulerActiviteCollectivite
+      responses:
+        '204':
+          description: Activité annulée
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /federation/activites:
+    get:
+      tags: [Activités]
+      summary: Lister les activités planifiées par la fédération
+      operationId: listActivitesFederation
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: dateDebut
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateFin
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Liste des activités de la fédération
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedActivites'
+
+    post:
+      tags: [Activités]
+      summary: Planifier une activité fédérale (pour toutes ou certaines collectivités)
+      operationId: planifierActiviteFederation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActiviteFederaleCreationRequest'
+      responses:
+        '201':
+          description: Activité fédérale planifiée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activite'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /federation/activites/{activiteId}:
+    parameters:
+      - $ref: '#/components/parameters/ActiviteId'
+    get:
+      tags: [Activités]
+      summary: Obtenir les détails d'une activité fédérale
+      operationId: getActiviteFederation
+      responses:
+        '200':
+          description: Détails de l'activité fédérale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activite'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Activités]
+      summary: Modifier une activité fédérale
+      operationId: updateActiviteFederation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActiviteUpdateRequest'
+      responses:
+        '200':
+          description: Activité fédérale mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activite'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Activités]
+      summary: Annuler une activité fédérale
+      operationId: annulerActiviteFederation
+      responses:
+        '204':
+          description: Activité annulée
+        '404':
+          $ref: '#/components/responses/NotFound'
+
  
  components:
  
