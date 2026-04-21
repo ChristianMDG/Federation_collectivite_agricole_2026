@@ -34,3 +34,8 @@ create table collectivity
     treasurer_id      varchar(255) references member (id),
     secretary_id      varchar(255) references member (id)
 );
+<<<<<<< HEAD
+=======
+
+CREATE SEQUENCE member_id_seq START 1000;
+>>>>>>> 186917116bb03fc3c4db4cd6a535cd955f857f7e
