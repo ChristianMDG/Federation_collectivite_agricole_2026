@@ -1,17 +1,20 @@
-package com.exam.federation.entity;
+package com.exam.federation.dto;
 
 import com.exam.federation.entity.Enums.Gender;
 import com.exam.federation.entity.Enums.MemberOccupation;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class Member {
+@AllArgsConstructor
+public class MemberResponse {
     private String id;
     private String firstName;
     private String lastName;
@@ -19,7 +22,8 @@ public class Member {
     private Gender gender;
     private String address;
     private String profession;
-    private String phoneNumber;
+    private Integer phoneNumber;
     private String email;
     private MemberOccupation occupation;
+    private List<MemberResponse> referees;
 }
