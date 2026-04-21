@@ -1370,4 +1370,63 @@ components:
         total:
           type: integer
 
+    Mandat:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        collectiviteId:
+          type: string
+          format: uuid
+        annee:
+          type: integer
+          description: Année civile du mandat
+          example: 2025
+        president:
+          $ref: '#/components/schemas/MembreRef'
+        presidentAdjoint:
+          $ref: '#/components/schemas/MembreRef'
+        tresorier:
+          $ref: '#/components/schemas/MembreRef'
+        secretaire:
+          $ref: '#/components/schemas/MembreRef'
+
+    MandatCreationRequest:
+      type: object
+      required:
+        - annee
+        - presidentId
+        - presidentAdjointId
+        - tresorierIid
+        - secretaireId
+      properties:
+        annee:
+          type: integer
+          example: 2026
+        presidentId:
+          type: string
+          format: uuid
+          description: Ne peut pas avoir plus de 2 mandats au poste de président
+        presidentAdjointId:
+          type: string
+          format: uuid
+        tresorierIid:
+          type: string
+          format: uuid
+        secretaireId:
+          type: string
+          format: uuid
+
+    MembreRef:
+      type: object
+      description: Référence légère d'un membre
+      properties:
+        id:
+          type: string
+          format: uuid
+        nomComplet:
+          type: string
+
   
