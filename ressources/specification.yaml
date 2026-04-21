@@ -1680,4 +1680,111 @@ components:
           type: string
           format: date
 
+    Compte:
+      type: object
+      discriminator:
+        propertyName: type
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/TypeCompte'
+        solde:
+          type: number
+          readOnly: true
+        devise:
+          type: string
+          default: MGA
+          readOnly: true
+
+    CompteCaisse:
+      allOf:
+        - $ref: '#/components/schemas/Compte'
+        - type: object
+          description: Compte caisse (unique par collectivité / fédération)
+
+    CompteBancaire:
+      allOf:
+        - $ref: '#/components/schemas/Compte'
+        - type: object
+          properties:
+            nomTitulaire:
+              type: string
+            nomBanque:
+              $ref: '#/components/schemas/BanqueName'
+            numeroCompte:
+              type: string
+              pattern: '^\d{5}\d{5}\d{11}\d{2}$'
+              description: "Format RIB: BBBBBGGGGGCCCCCCCCCCCKKK (23 chiffres)"
+              example: "0001200015000000000010147"
+          required:
+            - nomTitulaire
+            - nomBanque
+            - numeroCompte
+
+    CompteMobileMoney:
+      allOf:
+        - $ref: '#/components/schemas/Compte'
+        - type: object
+          properties:
+            nomTitulaire:
+              type: string
+            serviceMobileMoney:
+              $ref: '#/components/schemas/ServiceMobileMoney'
+            numeroDeTelephone:
+              type: string
+              pattern: '^\+?[0-9]{9,15}$'
+              description: Numéro de téléphone unique associé au compte
+          required:
+            - nomTitulaire
+            - serviceMobileMoney
+            - numeroDeTelephone
+
+    CompteCreationRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          $ref: '#/components/schemas/TypeCompte'
+        nomTitulaire:
+          type: string
+          description: Requis pour bancaire et mobile_money
+        nomBanque:
+          $ref: '#/components/schemas/BanqueName'
+        numeroCompte:
+          type: string
+          pattern: '^\d{23}$'
+          description: Requis pour bancaire
+        serviceMobileMoney:
+          $ref: '#/components/schemas/ServiceMobileMoney'
+        numeroDeTelephone:
+          type: string
+          description: Requis pour mobile_money
+
+    CompteUpdateRequest:
+      type: object
+      properties:
+        nomTitulaire:
+          type: string
+
+    SoldeCompte:
+      type: object
+      properties:
+        compteId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/TypeCompte'
+        solde:
+          type: number
+        devise:
+          type: string
+          default: MGA
+        date:
+          type: string
+          format: date
+
   
