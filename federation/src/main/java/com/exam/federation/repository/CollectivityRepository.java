@@ -16,7 +16,7 @@ import java.util.UUID;
 @Repository
 public class CollectivityRepository {
 
-    private final DataSource dataSource;
+    private DataSource dataSource;
 
     public CollectivityRepository(DataSource dataSource) {
         this.dataSource = dataSource;
