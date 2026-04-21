@@ -30,7 +30,9 @@ public class CollectivityStructure {
     }
 
     public Member getSecretary() {
-        return secretary; }
+        return secretary;
+    }
+
     public void setSecretary(Member secretary) {
         this.secretary = secretary;
     }
