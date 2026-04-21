@@ -1910,4 +1910,52 @@ components:
         total:
           type: integer
 
+    FichePresence:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        activiteId:
+          type: string
+          format: uuid
+        dateEnregistrement:
+          type: string
+          format: date-time
+          readOnly: true
+        presences:
+          type: array
+          items:
+            $ref: '#/components/schemas/LignePresence'
+
+    LignePresence:
+      type: object
+      properties:
+        membreId:
+          type: string
+          format: uuid
+        statut:
+          $ref: '#/components/schemas/StatutPresence'
+        motifAbsence:
+          type: string
+          description: Obligatoire si statut = excuse
+        membreExterne:
+          type: boolean
+          default: false
+          description: Vrai si le membre appartient à une autre collectivité (non comptabilisé dans l'assiduité)
+      required:
+        - membreId
+        - statut
+
+    PresencesRequest:
+      type: object
+      required:
+        - presences
+      properties:
+        presences:
+          type: array
+          items:
+            $ref: '#/components/schemas/LignePresence'
+
   
