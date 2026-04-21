@@ -1958,4 +1958,83 @@ components:
           items:
             $ref: '#/components/schemas/LignePresence'
 
+    RapportMensuel:
+      type: object
+      description: Rapport mensuel de la collectivité envoyé à la fédération
+      properties:
+        collectiviteId:
+          type: string
+          format: uuid
+        annee:
+          type: integer
+        mois:
+          type: integer
+        nombreMembresInscrits:
+          type: integer
+        tauxAssiduiteMoyen:
+          type: number
+          format: float
+          description: Taux d'assiduité moyen de la collectivité en pourcentage
+          example: 78.5
+        dateGeneration:
+          type: string
+          format: date-time
+
+    StatistiquesMembres:
+      type: object
+      properties:
+        collectiviteId:
+          type: string
+          format: uuid
+        dateDebut:
+          type: string
+          format: date
+        dateFin:
+          type: string
+          format: date
+        membres:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatistiquesMembreDetail'
+
+    StatistiquesMembreDetail:
+      type: object
+      properties:
+        membreId:
+          type: string
+          format: uuid
+        nomComplet:
+          type: string
+        poste:
+          $ref: '#/components/schemas/Poste'
+        tauxAssiduité:
+          type: number
+          format: float
+          description: Taux d'assiduité en pourcentage sur la période
+          example: 83.3
+        montantEncaisse:
+          type: number
+          description: Total des cotisations encaissées sur la période (MGA)
+        montantImpayePotentiel:
+          type: number
+          description: Montant potentiellement non réglé sur la période (MGA)
+        devise:
+          type: string
+          default: MGA
+
+    SyntheseCollectivites:
+      type: object
+      properties:
+        annee:
+          type: integer
+        mois:
+          type: integer
+        totalCollectivites:
+          type: integer
+        collectivites:
+          type: array
+          items:
+            $ref: '#/components/schemas/RapportMensuel'
+
+
   
