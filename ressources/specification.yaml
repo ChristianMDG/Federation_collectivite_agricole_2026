@@ -2,15 +2,15 @@ openapi: 3.0.3
 info:
   title: API Fédération de Collectivités Agricoles
   description: |
-    API REST pour la gestion digitale de la fédération de collectivités agricoles à Madagascar.
-    Elle couvre la gestion des collectivités, des membres, des cotisations, de la trésorerie,
-    des activités, de l'assiduité et des statistiques.
-  version: 1.0.0
+    Cette API permet de gérer les collectivités agricoles affiliées à la fédération, ainsi que les membres,
+    les cotisations, les activités et la trésorerie. Elle est conçue pour être utilisée par les secrétaires
+    et trésoriers des collectivités, ainsi que par les administrateurs de la fédération.
+  version: 1.1.0
   contact:
-    name: Fédération Nationale des Collectivités Agricoles - Madagascar
+    name: Support API
 
 servers:
-  - url: https://api.federation-agricole.mg/
+  - url: https://localhost:3000/
     description: Serveur de production
 
 tags:
@@ -27,9 +27,12 @@ tags:
   - name: Assiduité
     description: "F - Présence et assiduité des membres"
   - name: Statistiques
-    description: "G - Statistiques et rapports"
+    description: "G - Statistiques et rapports des collectivités"
+  - name: Statistiques Fédération
+    description: "H - Rapport global mensuel et annuel de la fédération"
 
 paths:
+
 
   /collectivites:
     get:
@@ -56,7 +59,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PagedCollectivites'
- 
+
     post:
       tags: [Collectivités]
       summary: Soumettre une demande d'ouverture d'une nouvelle collectivité
@@ -82,7 +85,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
- 
+
   /collectivites/{collectiviteId}:
     parameters:
       - $ref: '#/components/parameters/CollectiviteId'
@@ -99,7 +102,7 @@ paths:
                 $ref: '#/components/schemas/Collectivite'
         '404':
           $ref: '#/components/responses/NotFound'
- 
+
     patch:
       tags: [Collectivités]
       summary: Modifier les informations d'une collectivité
@@ -119,7 +122,7 @@ paths:
                 $ref: '#/components/schemas/Collectivite'
         '404':
           $ref: '#/components/responses/NotFound'
- 
+
   /collectivites/{collectiviteId}/autorisation:
     parameters:
       - $ref: '#/components/parameters/CollectiviteId'
@@ -144,7 +147,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
- 
+
   /collectivites/{collectiviteId}/mandats:
     parameters:
       - $ref: '#/components/parameters/CollectiviteId'
@@ -169,7 +172,7 @@ paths:
                   $ref: '#/components/schemas/Mandat'
         '404':
           $ref: '#/components/responses/NotFound'
- 
+
     post:
       tags: [Collectivités]
       summary: Créer un nouveau mandat (suite aux votes de fin d'année)
@@ -227,9 +230,13 @@ paths:
       tags: [Membres]
       summary: Admettre un nouveau membre dans une collectivité
       description: |
-        Admet un nouveau membre. Le membre doit être parrainé par un membre confirmé
-        ayant plus de 90 jours d'ancienneté, fournir ses informations personnelles et
-        régler les frais d'adhésion de 50 000 MGA.
+        Admet un nouveau membre selon les nouvelles conditions en vigueur depuis le 21 avril 2026 :
+        - Être parrainé par au moins deux membres confirmés de la fédération ; le nombre de parrains
+          issus de la collectivité cible doit être supérieur ou égal au nombre de parrains issus
+          d'autres collectivités.
+        - Fournir ses informations personnelles, incluant la nature de la relation avec chaque parrain.
+        - Régler les frais d'adhésion de 50 000 MGA ainsi que l'intégralité des cotisations annuelles
+          obligatoires imposées par la collectivité.
       operationId: admettreMembreCollectivite
       requestBody:
         required: true
@@ -344,7 +351,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
-
 
   /collectivites/{collectiviteId}/cotisations:
     parameters:
@@ -471,6 +477,8 @@ paths:
                       $ref: '#/components/schemas/Reversement'
                   total:
                     type: integer
+
+
   /collectivites/{collectiviteId}/comptes:
     parameters:
       - $ref: '#/components/parameters/CollectiviteId'
@@ -1015,6 +1023,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+
   /collectivites/{collectiviteId}/statistiques/rapport-mensuel:
     parameters:
       - $ref: '#/components/parameters/CollectiviteId'
@@ -1144,6 +1153,7 @@ paths:
 
 components:
 
+
   parameters:
     CollectiviteId:
       name: collectiviteId
@@ -1200,8 +1210,8 @@ components:
         minimum: 1
         maximum: 100
 
-  schemas:
 
+  schemas:
     Poste:
       type: string
       enum:
@@ -1787,6 +1797,7 @@ components:
           type: string
           format: date
 
+    # ---- ACTIVITÉS ----
     Activite:
       type: object
       properties:
@@ -2051,9 +2062,7 @@ components:
         - code
         - message
 
-  # -------------------------------------------------------------------------
-  # RESPONSES
-  # -------------------------------------------------------------------------
+
   responses:
     BadRequest:
       description: Requête invalide – données manquantes ou incorrectes
@@ -2103,7 +2112,3 @@ components:
 
 security:
   - bearerAuth: []
-
-
-
-  
