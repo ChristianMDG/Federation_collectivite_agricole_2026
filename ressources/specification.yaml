@@ -123,31 +123,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /collectivites/{collectiviteId}/autorisation:
-    parameters:
-      - $ref: '#/components/parameters/CollectiviteId'
-    post:
-      tags: [Collectivités]
-      summary: Accorder ou refuser l'autorisation d'ouverture (fédération)
-      operationId: statueSurAutorisationCollectivite
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AutorisationRequest'
-      responses:
-        '200':
-          description: Décision enregistrée
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Collectivite'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-
   /collectivites/{collectiviteId}/mandats:
     parameters:
       - $ref: '#/components/parameters/CollectiviteId'
@@ -294,31 +269,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /collectivites/{collectiviteId}/membres/{membreId}/transfert:
-    parameters:
-      - $ref: '#/components/parameters/CollectiviteId'
-      - $ref: '#/components/parameters/MembreId'
-    post:
-      tags: [Membres]
-      summary: Transférer un membre vers une autre collectivité
-      operationId: transfererMembre
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TransfertRequest'
-      responses:
-        '200':
-          description: Transfert effectué avec succès
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Membre'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/UnprocessableEntity'
 
   /collectivites/{collectiviteId}/membres/{membreId}/demission:
     parameters:
