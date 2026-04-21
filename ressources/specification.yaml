@@ -192,7 +192,7 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
-   /collectivites/{collectiviteId}/membres:
+  /collectivites/{collectiviteId}/membres:
     parameters:
       - $ref: '#/components/parameters/CollectiviteId'
     get:
@@ -344,6 +344,133 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+
+  /collectivites/{collectiviteId}/cotisations:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+    get:
+      tags: [Cotisations]
+      summary: Lister les cotisations d'une collectivité
+      operationId: listCotisationsCollectivite
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: type
+          in: query
+          description: Filtrer par type de cotisation
+          schema:
+            $ref: '#/components/schemas/TypeCotisation'
+        - name: dateDebut
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateFin
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: membreId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Liste des cotisations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCotisations'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Cotisations]
+      summary: Enregistrer un encaissement de cotisation
+      description: |
+        Le trésorier enregistre une cotisation. La trace inclut le montant,
+        la date et le mode de paiement.
+      operationId: enregistrerCotisation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CotisationRequest'
+      responses:
+        '201':
+          description: Cotisation enregistrée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cotisation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /collectivites/{collectiviteId}/cotisations/{cotisationId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectiviteId'
+      - name: cotisationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Cotisations]
+      summary: Obtenir le détail d'une cotisation
+      operationId: getCotisation
+      responses:
+        '200':
+          description: Détail de la cotisation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cotisation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /federation/reversements:
+    get:
+      tags: [Cotisations]
+      summary: Lister les reversements des collectivités vers la fédération
+      operationId: listReversements
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: collectiviteId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: dateDebut
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateFin
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Liste des reversements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reversement'
+                  total:
+                    type: integer
+
 
  
  components:
