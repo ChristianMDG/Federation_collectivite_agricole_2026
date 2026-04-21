@@ -1429,4 +1429,149 @@ components:
         nomComplet:
           type: string
 
+    Membre:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        nom:
+          type: string
+        prenom:
+          type: string
+        dateNaissance:
+          type: string
+          format: date
+        genre:
+          $ref: '#/components/schemas/Genre'
+        adresse:
+          type: string
+        metier:
+          type: string
+        telephone:
+          type: string
+          pattern: '^\+?[0-9]{9,15}$'
+        email:
+          type: string
+          format: email
+        dateAdhesion:
+          type: string
+          format: date
+          readOnly: true
+        poste:
+          $ref: '#/components/schemas/Poste'
+        collectiviteId:
+          type: string
+          format: uuid
+          readOnly: true
+        statut:
+          type: string
+          enum: [actif, demissionnaire]
+          readOnly: true
+        parrainId:
+          type: string
+          format: uuid
+          readOnly: true
+
+    MembreAdmissionRequest:
+      type: object
+      required:
+        - nom
+        - prenom
+        - dateNaissance
+        - genre
+        - adresse
+        - metier
+        - telephone
+        - email
+        - parrainId
+        - paiement
+      properties:
+        nom:
+          type: string
+        prenom:
+          type: string
+        dateNaissance:
+          type: string
+          format: date
+        genre:
+          $ref: '#/components/schemas/Genre'
+        adresse:
+          type: string
+        metier:
+          type: string
+        telephone:
+          type: string
+          pattern: '^\+?[0-9]{9,15}$'
+        email:
+          type: string
+          format: email
+        parrainId:
+          type: string
+          format: uuid
+          description: ID d'un membre confirmé avec plus de 90 jours d'ancienneté
+        paiement:
+          $ref: '#/components/schemas/PaiementAdhesion'
+
+    PaiementAdhesion:
+      type: object
+      required:
+        - mode
+        - montant
+      properties:
+        mode:
+          type: string
+          enum: [mobile_money, virement_bancaire]
+        montant:
+          type: number
+          description: Doit être égal à 50000 MGA
+          example: 50000
+        devise:
+          type: string
+          default: MGA
+        reference:
+          type: string
+          description: Référence de transaction
+
+    MembreUpdateRequest:
+      type: object
+      properties:
+        adresse:
+          type: string
+        metier:
+          type: string
+        telephone:
+          type: string
+          pattern: '^\+?[0-9]{9,15}$'
+        email:
+          type: string
+          format: email
+
+    TransfertRequest:
+      type: object
+      required:
+        - nouvelleCollectiviteId
+      properties:
+        nouvelleCollectiviteId:
+          type: string
+          format: uuid
+        motif:
+          type: string
+          example: "Changement de ville"
+
+    PagedMembres:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Membre'
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+
   
