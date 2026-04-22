@@ -1,13 +1,15 @@
 package com.exam.federation.controllers;
 
+import com.exam.federation.Exception.BusinessException;
+import com.exam.federation.dto.AssignIdentificationRequest;
 import com.exam.federation.dto.CollectivityResponse;
 import com.exam.federation.dto.CreateCollectivityRequest;
-import com.exam.federation.entity.AssignIdentificationRequest;
 import com.exam.federation.services.CollectivityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,14 +24,16 @@ public class CollectivityController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody List<CreateCollectivityRequest> requests) {
+    public ResponseEntity<?> createCollectivities(@RequestBody List<CreateCollectivityRequest> requests) {
         try {
-            List<CollectivityResponse> created = collectivityService.saveAll(requests);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            List<CollectivityResponse> responses = collectivityService.saveAll(requests);
+            return ResponseEntity.status(HttpStatus.CREATED).body(responses);
+
+        } catch (BusinessException e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", e.getStatusCode());
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(error);
         }
     }
 
@@ -37,8 +41,15 @@ public class CollectivityController {
     public ResponseEntity<?> assignIdentification(
             @PathVariable String id,
             @RequestBody AssignIdentificationRequest request) {
+        try {
+            CollectivityResponse response = collectivityService.assignIdentification(id, request);
+            return ResponseEntity.ok(response);
 
-        CollectivityResponse response = collectivityService.assignIdentification(id, request);
-        return ResponseEntity.ok(response);
+        } catch (BusinessException e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", e.getStatusCode());
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(error);
+        }
     }
 }

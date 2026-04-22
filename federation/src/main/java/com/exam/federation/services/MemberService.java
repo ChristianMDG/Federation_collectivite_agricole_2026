@@ -1,7 +1,6 @@
 package com.exam.federation.services;
 
 import com.exam.federation.Exception.BusinessException;
-import com.exam.federation.Exception.*;
 import com.exam.federation.dto.CreateMember;
 import com.exam.federation.dto.MemberResponse;
 import com.exam.federation.repository.MemberRepository;
@@ -23,38 +22,32 @@ public class MemberService {
         List<MemberResponse> responses = new ArrayList<>();
 
         for (CreateMember request : requests) {
-            try {
-                if (Boolean.FALSE.equals(request.getRegistrationFeePaid())) {
-                    throw new RegistrationFeeNotPaidException(request.getEmail());
-                }
 
-                if (Boolean.FALSE.equals(request.getMembershipDuesPaid())) {
-                    throw new MembershipDuesNotPaidException(request.getEmail());
-                }
+          /*  if (request.getRegistrationFeePaid() == null || !request.getRegistrationFeePaid()) {
+                throw BusinessException.registrationFeeNotPaid(request.getEmail());
+            }
 
-                if (request.getEmail() == null || request.getEmail().isEmpty()) {
-                    throw new EmailAlreadyExistsException("Email is required");
-                }
+            if (request.getMembershipDuesPaid() == null || !request.getMembershipDuesPaid()) {
+                throw BusinessException.membershipDuesNotPaid(request.getEmail());
+            }
+*/
+            if (request.getEmail() == null || request.getEmail().isEmpty()) {
+                throw BusinessException.emailRequired();
+            }
 
-                if (memberRepository.existsByEmail(request.getEmail())) {
-                    throw new EmailAlreadyExistsException(request.getEmail());
-                }
+            if (memberRepository.existsByEmail(request.getEmail())) {
+                throw BusinessException.emailAlreadyExists(request.getEmail());
+            }
 
-                if (request.getReferees() != null && !request.getReferees().isEmpty()) {
-                    for (String refereeId : request.getReferees()) {
-                        if (!memberRepository.existsById(refereeId)) {
-                            throw new RefereeNotFoundException(refereeId);
-                        }
+            if (request.getReferees() != null) {
+                for (String refereeId : request.getReferees()) {
+                    if (!memberRepository.existsById(refereeId)) {
+                        throw BusinessException.refereeNotFound(refereeId);
                     }
                 }
-
-                responses.add(memberRepository.save(request));
-
-            } catch (BusinessException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException("Erreur technique: " + e.getMessage());
             }
+
+            responses.add(memberRepository.save(request));
         }
 
         return responses;

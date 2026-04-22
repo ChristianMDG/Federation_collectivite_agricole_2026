@@ -2,20 +2,23 @@ package com.exam.federation.repository;
 
 import com.exam.federation.config.DataSource;
 import com.exam.federation.dto.*;
-import com.exam.federation.entity.AssignIdentificationRequest;
 import com.exam.federation.entity.CreateCollectivityStructure;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-@RequiredArgsConstructor
 public class CollectivityRepository {
 
     private final DataSource dataSource;
     private final MemberRepository memberRepository;
+
+    public CollectivityRepository(DataSource dataSource, MemberRepository memberRepository) {
+        this.dataSource = dataSource;
+        this.memberRepository = memberRepository;
+    }
 
     public CollectivityResponse save(CreateCollectivityRequest request) {
         String sql = """
@@ -44,6 +47,8 @@ public class CollectivityRepository {
                 String id = rs.getString("id");
                 String location = rs.getString("location");
 
+                insertCollectivityMembers(id, request.getMembers());
+
 
                 List<MemberResponse> members = getMembersByIds(request.getMembers());
 
@@ -61,13 +66,11 @@ public class CollectivityRepository {
                 response.setStructure(structureResponse);
                 response.setMembers(members);
 
-                insertCollectivityMembers(id, request.getMembers());
-
                 return response;
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erreur lors de la création de la collectivité: " + e.getMessage());
         }
         return null;
     }
@@ -86,7 +89,7 @@ public class CollectivityRepository {
             ps.executeBatch();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erreur lors de l'insertion des membres: " + e.getMessage());
         }
     }
 
@@ -131,11 +134,10 @@ public class CollectivityRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erreur lors de la recherche: " + e.getMessage());
         }
         return null;
     }
-
 
     public boolean existsByNumber(String number) {
         String sql = "SELECT COUNT(number) FROM collectivity WHERE number = ?";
@@ -148,11 +150,10 @@ public class CollectivityRepository {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erreur lors de la vérification du numéro: " + e.getMessage());
         }
         return false;
     }
-
 
     public boolean existsByName(String name) {
         String sql = "SELECT COUNT(name) FROM collectivity WHERE name = ?";
@@ -165,7 +166,7 @@ public class CollectivityRepository {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erreur lors de la vérification du nom: " + e.getMessage());
         }
         return false;
     }
@@ -194,11 +195,10 @@ public class CollectivityRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erreur lors de l'assignation: " + e.getMessage());
         }
         return null;
     }
-
 
     private List<MemberResponse> getMembersByIds(List<String> memberIds) {
         List<MemberResponse> members = new ArrayList<>();
@@ -213,10 +213,10 @@ public class CollectivityRepository {
         return members;
     }
 
-
     private List<String> getMemberIdsByCollectivityId(String collectivityId) {
         String sql = "SELECT member_id FROM collectivity_members WHERE collectivity_id = ?";
         List<String> memberIds = new ArrayList<>();
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, collectivityId);
@@ -225,7 +225,7 @@ public class CollectivityRepository {
                 memberIds.add(rs.getString("member_id"));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erreur lors de la récupération des membres: " + e.getMessage());
         }
         return memberIds;
     }
