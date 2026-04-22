@@ -208,7 +208,6 @@ public class MemberRepository {
                 member.setReferees(findRefereesByMemberId(id));
                 return member;
             }
-
         } catch (SQLException e) {
             throw new RuntimeException("Database error: " + e.getMessage(), e);
         }

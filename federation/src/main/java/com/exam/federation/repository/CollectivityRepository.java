@@ -22,14 +22,14 @@ public class CollectivityRepository {
 
     public CollectivityResponse save(CreateCollectivityRequest request) {
         String sql = """
-            INSERT INTO collectivity (
-                id, location, president_id, vice_president_id, treasurer_id, secretary_id
-            ) VALUES (
-                'col_' || nextval('collectivity_id_seq'),
-                ?, ?, ?, ?, ?
-            )
-            RETURNING id, location
-        """;
+                    INSERT INTO collectivity (
+                        id, location, president_id, vice_president_id, treasurer_id, secretary_id
+                    ) VALUES (
+                        'col_' || nextval('collectivity_id_seq'),
+                        ?, ?, ?, ?, ?
+                    )
+                    RETURNING id, location
+                """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -95,11 +95,11 @@ public class CollectivityRepository {
 
     public CollectivityResponse findById(String id) {
         String sql = """
-            SELECT id, number, name, location, 
-                   president_id, vice_president_id, treasurer_id, secretary_id
-            FROM collectivity 
-            WHERE id = ?
-        """;
+                    SELECT id, number, name, location, 
+                           president_id, vice_president_id, treasurer_id, secretary_id
+                    FROM collectivity 
+                    WHERE id = ?
+                """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -174,13 +174,13 @@ public class CollectivityRepository {
 
     public CollectivityResponse assignIdentification(String id, AssignIdentificationRequest request) {
         String sql = """
-            UPDATE collectivity 
-            SET number = ?, name = ? 
-            WHERE id = ? 
-              AND (number IS NULL OR number = '')
-              AND (name IS NULL OR name = '')
-            RETURNING id, number, name, location
-        """;
+                    UPDATE collectivity 
+                    SET number = ?, name = ? 
+                    WHERE id = ? 
+                      AND (number IS NULL OR number = '')
+                      AND (name IS NULL OR name = '')
+                    RETURNING id, number, name, location
+                """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
