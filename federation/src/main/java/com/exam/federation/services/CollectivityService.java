@@ -1,29 +1,25 @@
 package com.exam.federation.services;
 
 import com.exam.federation.Exception.BusinessException;
-import com.exam.federation.dto.AssignIdentificationRequest;
-import com.exam.federation.dto.CollectivityResponse;
-import com.exam.federation.dto.CreateCollectivityRequest;
+import com.exam.federation.dto.*;
 
 import com.exam.federation.entity.CreateCollectivityStructure;
 import com.exam.federation.repository.CollectivityRepository;
 import com.exam.federation.repository.MemberRepository;
+import com.exam.federation.repository.MembershipFeeRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class CollectivityService {
 
     private final CollectivityRepository collectivityRepository;
     private final MemberRepository memberRepository;
-
-    public CollectivityService(CollectivityRepository collectivityRepository,
-                               MemberRepository memberRepository) {
-        this.collectivityRepository = collectivityRepository;
-        this.memberRepository = memberRepository;
-    }
+    private final MembershipFeeRepository membershipFeeRepository;
 
     public List<CollectivityResponse> saveAll(List<CreateCollectivityRequest> requests) {
         List<CollectivityResponse> responses = new ArrayList<>();
@@ -89,5 +85,28 @@ public class CollectivityService {
         }
 
         return collectivityRepository.assignIdentification(id, request);
+    }
+
+    public List<MembershipFee> createMembershipFees(String id, List<CreateMembershipFee> requests) {
+
+        CollectivityResponse collectivity = collectivityRepository.findById(id);
+        if (collectivity == null) {
+            throw BusinessException.collectivityNotFound(id);
+        }
+
+        for (CreateMembershipFee request : requests) {
+            if (request.getAmount() == null || request.getAmount() <= 0) {
+                throw BusinessException.invalidAmount();
+            }
+
+            if (request.getFrequency() == null) {
+                throw BusinessException.invalidFrequency();
+            }
+
+            if (request.getEligibleFrom() == null) {
+                throw new BusinessException(400, "Eligible from date is required");
+            }
+        }
+        return membershipFeeRepository.saveAll(id, requests);
     }
 }

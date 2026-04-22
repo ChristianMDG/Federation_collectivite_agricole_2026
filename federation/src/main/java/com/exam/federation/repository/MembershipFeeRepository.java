@@ -15,10 +15,10 @@ import java.util.List;
 @Repository
 @AllArgsConstructor
 public class MembershipFeeRepository {
+
+    private final DataSource dataSource;
+
     public List<MembershipFee> saveAll(String collectivityId, List<CreateMembershipFee> requests) {
-
-        DataSource dataSource = new DataSource();
-
         List<MembershipFee> responses = new ArrayList<>();
         String sql = """
             INSERT INTO membership_fee (
@@ -58,4 +58,5 @@ public class MembershipFeeRepository {
         }
         return responses;
     }
+
 }
