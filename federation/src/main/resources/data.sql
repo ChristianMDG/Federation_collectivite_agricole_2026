@@ -1,6 +1,6 @@
-create type gender_type as enum('MALE', 'FEMALE');
+create type gender_type as enum ('MALE', 'FEMALE');
 
-create type member_occupation_type as enum('JUNIOR', 'SENIOR', 'SECRETARY', 'TREASURER', 'VICE_PRESIDENT', 'PRESIDENT');
+create type member_occupation_type as enum ('JUNIOR', 'SENIOR', 'SECRETARY', 'TREASURER', 'VICE_PRESIDENT', 'PRESIDENT');
 
 create table member
 (
@@ -35,5 +35,17 @@ create table collectivity
     secretary_id      varchar(255) references member (id)
 );
 
-CREATE SEQUENCE member_id_seq START 1000;
+CREATE TABLE collectivity_members
+(
+    collectivity_id VARCHAR(255) REFERENCES collectivity (id) ON DELETE CASCADE,
+    member_id       VARCHAR(255) REFERENCES member (id) ON DELETE CASCADE,
+    PRIMARY KEY (collectivity_id, member_id)
+);
 
+
+ALTER TABLE collectivity
+    ADD COLUMN number VARCHAR(50) UNIQUE,
+    ADD COLUMN name   VARCHAR(255) UNIQUE;
+
+
+CREATE SEQUENCE member_id_seq START 1000;

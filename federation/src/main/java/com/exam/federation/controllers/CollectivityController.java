@@ -34,4 +34,12 @@ public class CollectivityController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/{id}/identification")
+    public ResponseEntity<CollectivityResponse> assignIdentification(
+            @PathVariable String id,
+            @Valid @RequestBody AssignIdentificationRequest request) {
+        CollectivityResponse response = collectivityService.assignIdentification(id, request);
+        return ResponseEntity.ok(response);
+    }
 }
