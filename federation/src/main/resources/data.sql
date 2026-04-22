@@ -12,7 +12,7 @@ create table member
     address               varchar(255),
     profession            varchar(255),
     phone_number          int,
-    email                 varchar(255),
+    email                 varchar(255) unique ,
     occupation            member_occupation_type,
     registration_fee_paid BOOLEAN,
     membership_dues_paid  BOOLEAN,
@@ -42,10 +42,10 @@ CREATE TABLE collectivity_members
     PRIMARY KEY (collectivity_id, member_id)
 );
 
-
 ALTER TABLE collectivity
     ADD COLUMN number VARCHAR(50) UNIQUE,
     ADD COLUMN name   VARCHAR(255) UNIQUE;
 
-
 CREATE SEQUENCE member_id_seq START 1000;
+create sequence collectivity_id_seq start 2000;
+

@@ -5,7 +5,6 @@ import com.exam.federation.dto.CreateMember;
 import com.exam.federation.dto.MemberResponse;
 import com.exam.federation.entity.Enums.Gender;
 import com.exam.federation.entity.Enums.MemberOccupation;
-import com.exam.federation.entity.Member;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -20,7 +19,6 @@ public class MemberRepository {
     private final DataSource dataSource;
 
     public MemberResponse save(CreateMember request) {
-
         String sql = """
             INSERT INTO member (
                 id, firstname, lastname, birthday, gender, address,
@@ -68,49 +66,40 @@ public class MemberRepository {
             member.setPhoneNumber(rs.getInt("phone_number"));
             member.setEmail(rs.getString("email"));
             member.setOccupation(MemberOccupation.valueOf(rs.getString("occupation")));
+            member.setReferees(new ArrayList<>());
 
             if (request.getReferees() != null && !request.getReferees().isEmpty()) {
                 addReferees(member.getId(), request.getReferees());
                 member.setReferees(findRefereesByMemberId(member.getId()));
-            } else {
-                member.setReferees(new ArrayList<>());
             }
 
             return member;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la création du membre", e);
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
         }
     }
 
-    public List<MemberResponse> saveAll(List<CreateMember> requests) {
-        List<MemberResponse> responses = new ArrayList<>();
+    public boolean existsByEmail(String email) {
+        String sql = "SELECT COUNT(email) FROM member WHERE email = ?";
 
-        for (CreateMember request : requests) {
-
-            if (Boolean.FALSE.equals(request.getRegistrationFeePaid())) {
-                throw new RuntimeException("Registration fee not paid");
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
-
-            if (Boolean.FALSE.equals(request.getMembershipDuesPaid())) {
-                throw new RuntimeException("Membership dues not paid");
-            }
-
-            if (request.getReferees() != null) {
-                for (String refereeId : request.getReferees()) {
-                    if (!existsById(refereeId)) {
-                        throw new RuntimeException("Referee not found: " + refereeId);
-                    }
-                }
-            }
-
-            responses.add(save(request));
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
         }
-
-        return responses;
+        return false;
     }
 
     public boolean existsById(String id) {
+        if (id == null || id.isEmpty()) {
+            return false;
+        }
 
         String sql = "SELECT COUNT(id) FROM member WHERE id = ?";
 
@@ -124,15 +113,13 @@ public class MemberRepository {
                 return rs.getInt(1) > 0;
             }
 
-            return false;
-
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
         }
+        return false;
     }
 
     private void addReferees(String memberId, List<String> refereeIds) {
-
         String sql = "INSERT INTO member_referees (member_id, referee_id) VALUES (?, ?)";
 
         try (Connection conn = dataSource.getConnection();
@@ -143,16 +130,14 @@ public class MemberRepository {
                 ps.setString(2, refereeId);
                 ps.addBatch();
             }
-
             ps.executeBatch();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
         }
     }
 
     private List<MemberResponse> findRefereesByMemberId(String memberId) {
-
         String sql = """
             SELECT r.id, r.firstname, r.lastname, r.birthday, r.gender,
                    r.address, r.profession, r.phone_number, r.email, r.occupation
@@ -182,23 +167,25 @@ public class MemberRepository {
                 referee.setEmail(rs.getString("email"));
                 referee.setOccupation(MemberOccupation.valueOf(rs.getString("occupation")));
                 referee.setReferees(new ArrayList<>());
-
                 referees.add(referee);
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
         }
-
         return referees;
     }
 
     public MemberResponse findById(String id) {
+        if (id == null || id.isEmpty()) {
+            return null;
+        }
+
         String sql = """
-        SELECT id, firstname, lastname, birthday, gender, 
-               address, profession, phone_number, email, occupation
-        FROM member WHERE id = ?
-    """;
+            SELECT id, firstname, lastname, birthday, gender, 
+                   address, profession, phone_number, email, occupation
+            FROM member WHERE id = ?
+        """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -218,11 +205,12 @@ public class MemberRepository {
                 member.setPhoneNumber(rs.getInt("phone_number"));
                 member.setEmail(rs.getString("email"));
                 member.setOccupation(MemberOccupation.valueOf(rs.getString("occupation")));
-                member.setReferees(new ArrayList<>());
+                member.setReferees(findRefereesByMemberId(id));
                 return member;
             }
+
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
         }
         return null;
     }

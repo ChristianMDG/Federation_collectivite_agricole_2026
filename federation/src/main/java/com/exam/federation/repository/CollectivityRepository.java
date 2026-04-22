@@ -17,7 +17,6 @@ public class CollectivityRepository {
     private final DataSource dataSource;
     private final MemberRepository memberRepository;
 
-
     public CollectivityResponse save(CreateCollectivityRequest request) {
         String sql = """
             INSERT INTO collectivity (
