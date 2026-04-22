@@ -12,17 +12,13 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/member")
-
+@RequestMapping("/members")
 public class MemberController {
     private final MemberService memberService;
 
-    @GetMapping("/hello")
-    public ResponseEntity<?> hello() {
-        return ResponseEntity.ok("Hello World");
-    }
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody CreateMember request) {
-        return ResponseEntity.ok(memberService.saveMember(request));
+    public ResponseEntity<List<MemberResponse>> createMembers(@RequestBody List<CreateMember> requests) {
+        List<MemberResponse> responses = memberService.saveAll(requests);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
 }

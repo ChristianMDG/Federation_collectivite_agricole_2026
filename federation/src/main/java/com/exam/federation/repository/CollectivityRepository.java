@@ -23,7 +23,7 @@ public class CollectivityRepository {
             INSERT INTO collectivity (
                 id, location, president_id, vice_president_id, treasurer_id, secretary_id
             ) VALUES (
-                'col_' || REPLACE(gen_random_uuid()::TEXT, '-', ''),
+                'col_' || nextval('collectivity_id_seq'),
                 ?, ?, ?, ?, ?
             )
             RETURNING id, location
@@ -157,7 +157,7 @@ public class CollectivityRepository {
 
 
     public boolean existsByName(String name) {
-        String sql = "SELECT COUNT(*) FROM collectivity WHERE name = ?";
+        String sql = "SELECT COUNT(name) FROM collectivity WHERE name = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

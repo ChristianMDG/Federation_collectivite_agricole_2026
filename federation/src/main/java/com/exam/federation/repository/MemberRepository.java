@@ -28,7 +28,7 @@ public class MemberRepository {
                 registration_fee_paid, membership_dues_paid, collectivity_id
             )
             VALUES (
-                'mem_' || REPLACE(gen_random_uuid()::TEXT, '-', ''),
+                'mem_' || nextval('member_id_seq'),
                 ?, ?, ?::DATE, ?::gender_type, ?, ?, ?, ?, ?::member_occupation_type, ?, ?, ?
             )
             RETURNING id, firstname, lastname, birthday, gender,
@@ -221,7 +221,6 @@ public class MemberRepository {
                 member.setReferees(new ArrayList<>());
                 return member;
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
