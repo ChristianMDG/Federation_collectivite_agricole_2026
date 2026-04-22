@@ -1,13 +1,14 @@
 package com.exam.federation.services;
 
-import com.exam.federation.dto.*;
-import com.exam.federation.entity.AssignIdentificationRequest;
+import com.exam.federation.Exception.BusinessException;
+import com.exam.federation.dto.AssignIdentificationRequest;
+import com.exam.federation.dto.CollectivityResponse;
+import com.exam.federation.dto.CreateCollectivityRequest;
+
 import com.exam.federation.entity.CreateCollectivityStructure;
 import com.exam.federation.repository.CollectivityRepository;
 import com.exam.federation.repository.MemberRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,98 +26,66 @@ public class CollectivityService {
     }
 
     public List<CollectivityResponse> saveAll(List<CreateCollectivityRequest> requests) {
-        List<CollectivityResponse> result = new ArrayList<>();
+        List<CollectivityResponse> responses = new ArrayList<>();
         for (CreateCollectivityRequest request : requests) {
-            result.add(save(request));
+            responses.add(save(request));
         }
-        return result;
+        return responses;
     }
 
     public CollectivityResponse save(CreateCollectivityRequest request) {
-        // Vérifier l'approbation
         if (request.getFederationApproval() == null || !request.getFederationApproval()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Collectivity without federation approval");
+            throw BusinessException.federationApprovalMissing();
         }
 
-        // Vérifier la structure
         if (request.getStructure() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Structure missing");
+            throw BusinessException.structureMissing();
         }
 
-        // Vérifier que les membres existent
-        if (request.getMembers() != null) {
-            for (String memberId : request.getMembers()) {
-                if (!memberRepository.existsById(memberId)) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                            "Member not found: " + memberId);
-                }
+        for (String memberId : request.getMembers()) {
+            if (!memberRepository.existsById(memberId)) {
+                throw BusinessException.memberNotFound(memberId);
             }
         }
 
-
-        CreateCollectivityStructure structure = request.getStructure();
-        if (!memberRepository.existsById(structure.getPresident())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "President not found: " + structure.getPresident());
+        CreateCollectivityStructure s = request.getStructure();
+        if (!memberRepository.existsById(s.getPresident())) {
+            throw BusinessException.memberNotFound(s.getPresident());
         }
-        if (!memberRepository.existsById(structure.getVicePresident())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Vice president not found: " + structure.getVicePresident());
+        if (!memberRepository.existsById(s.getVicePresident())) {
+            throw BusinessException.memberNotFound(s.getVicePresident());
         }
-        if (!memberRepository.existsById(structure.getTreasurer())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Treasurer not found: " + structure.getTreasurer());
+        if (!memberRepository.existsById(s.getTreasurer())) {
+            throw BusinessException.memberNotFound(s.getTreasurer());
         }
-        if (!memberRepository.existsById(structure.getSecretary())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Secretary not found: " + structure.getSecretary());
+        if (!memberRepository.existsById(s.getSecretary())) {
+            throw BusinessException.memberNotFound(s.getSecretary());
         }
 
         return collectivityRepository.save(request);
     }
 
     public CollectivityResponse assignIdentification(String id, AssignIdentificationRequest request) {
-        // Vérifier que la collectivité existe
         CollectivityResponse existing = collectivityRepository.findById(id);
+
         if (existing == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Collectivity not found");
+            throw BusinessException.collectivityNotFound(id);
         }
 
-        // Vérifier qu'elle n'a pas déjà un numéro
         if (existing.getNumber() != null && !existing.getNumber().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Collectivity already has a number: " + existing.getNumber());
+            throw BusinessException.collectivityAlreadyHasNumber();
         }
 
-        // Vérifier qu'elle n'a pas déjà un nom
         if (existing.getName() != null && !existing.getName().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Collectivity already has a name: " + existing.getName());
+            throw BusinessException.collectivityAlreadyHasName();
         }
 
-        // Vérifier que le numéro n'existe pas déjà (conflit)
         if (collectivityRepository.existsByNumber(request.getNumber())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Number already exists: " + request.getNumber());
+            throw BusinessException.numberAlreadyExists(request.getNumber());
         }
 
-        // Vérifier que le nom n'existe pas déjà (conflit)
         if (collectivityRepository.existsByName(request.getName())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Name already exists: " + request.getName());
-        }
-
-
-        if (request.getNumber() == null || request.getNumber().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Number is required");
-        }
-        if (request.getName() == null || request.getName().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Name is required");
+            throw BusinessException.nameAlreadyExists(request.getName());
         }
 
         return collectivityRepository.assignIdentification(id, request);

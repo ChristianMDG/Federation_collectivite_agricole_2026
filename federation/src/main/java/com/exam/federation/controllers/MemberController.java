@@ -1,28 +1,38 @@
 package com.exam.federation.controllers;
 
+import com.exam.federation.Exception.BusinessException;
 import com.exam.federation.dto.CreateMember;
 import com.exam.federation.dto.MemberResponse;
 import com.exam.federation.services.MemberService;
-import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@AllArgsConstructor
-@RequestMapping("/member")
-
+@RequestMapping("/members")
 public class MemberController {
+
     private final MemberService memberService;
 
-    @GetMapping("/hello")
-    public ResponseEntity<?> hello() {
-        return ResponseEntity.ok("Hello World");
+    public MemberController(MemberService memberService) {
+        this.memberService = memberService;
     }
-    @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody CreateMember request) {
-        return ResponseEntity.ok(memberService.saveMember(request));
+
+    @PostMapping
+    public ResponseEntity<?> createMembers(@RequestBody List<CreateMember> requests) {
+        try {
+            List<MemberResponse> responses = memberService.saveAll(requests);
+            return ResponseEntity.status(HttpStatus.CREATED).body(responses);
+
+        } catch (BusinessException e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", e.getStatusCode());
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(error);
+        }
     }
 }
