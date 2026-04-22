@@ -4,6 +4,8 @@ import com.exam.federation.config.DataSource;
 import com.exam.federation.dto.CreateMemberPayment;
 import com.exam.federation.dto.MemberPayment;
 import com.exam.federation.entity.Enums.PaymentMode;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,9 +13,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class MemberPaymentRepository {
 
-    private final DataSource dataSource;
+    private DataSource dataSource;
 
     public MemberPaymentRepository(DataSource dataSource) {
         this.dataSource = dataSource;
