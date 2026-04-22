@@ -35,6 +35,35 @@ paths:
           description: Collectivity without federation approval or structure missing.
         404:
           description: Member not found.
+
+  '/collectivities/{id}/identification':
+    patch:
+      summary: Assign a name and a number to a collectivity
+      description: |
+        Assign unique name and federation-provided number to unnamed collectivity.
+      parameters:
+        - $ref: '#/components/parameters/CollectivityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectivityIdentification'
+      responses:
+        200:
+          description: Collectivity successfully identified with name and number.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collectivity'
+        400:
+          description: |
+            Bad request if collectivity already has a name/number or if either is missing
+        404:
+          description: Collectivity not found.
+        409:
+          description: A collectivity with the same name already exists.
+
   '/members':
     post:
       summary: Create list of members
@@ -61,7 +90,17 @@ paths:
             - Membership dues not paid or registration fee not paid.
         404:
           description: Either collectivity or member not found.
+
 components:
+  parameters:
+    CollectivityId:
+      name: id
+      in: path
+      required: true
+      description: Unique identifier of the collectivity.
+      schema:
+        type: string
+
   schemas:
     CreateCollectivity:
       type: object
@@ -99,11 +138,33 @@ components:
           $ref: '#/components/schemas/Member'
         secretary:
           $ref: '#/components/schemas/Member'
+
+    CollectivityIdentification:
+      type: object
+      required:
+        - name
+        - number
+      properties:
+        name:
+          type: string
+          description: Official name assigned by the federation
+          example: "Collectivité Agricole Antsirabe"
+        number:
+          type: string
+          description: Official number assigned by the federation.
+          example: "FED-2026-047"
+
     Collectivity:
       type: object
       properties:
         id:
           type: string
+        name:
+          type: string
+          description: Federation-assigned name is null until identification
+        number:
+          type: string
+          description: Federation-assigned name is null until identification
         location:
           type: string
         structure:
