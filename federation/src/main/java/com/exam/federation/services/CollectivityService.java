@@ -4,6 +4,7 @@ import com.exam.federation.Exception.BusinessException;
 import com.exam.federation.dto.*;
 
 import com.exam.federation.entity.CreateCollectivityStructure;
+import com.exam.federation.entity.MembershipFee;
 import com.exam.federation.repository.CollectivityRepository;
 import com.exam.federation.repository.CollectivityTransactionRepository;
 import com.exam.federation.repository.MemberRepository;

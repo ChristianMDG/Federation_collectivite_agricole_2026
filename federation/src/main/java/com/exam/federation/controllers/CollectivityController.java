@@ -54,10 +54,10 @@ public class CollectivityController {
     }
 
     @PostMapping("/{id}/membershipFees")
-    public ResponseEntity<List<MembershipFee>> createMembershipFees(
+    public ResponseEntity<?> createMembershipFees(
             @PathVariable String id,
             @RequestBody List<CreateMembershipFee> requests) {
-        List<MembershipFee> responses = collectivityService.createMembershipFees(id, requests);
+        List<?> responses = collectivityService.createMembershipFees(id, requests);
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
 
