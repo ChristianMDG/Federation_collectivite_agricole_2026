@@ -23,14 +23,6 @@ public class MemberService {
 
         for (CreateMember request : requests) {
 
-          /*  if (request.getRegistrationFeePaid() == null || !request.getRegistrationFeePaid()) {
-                throw BusinessException.registrationFeeNotPaid(request.getEmail());
-            }
-
-            if (request.getMembershipDuesPaid() == null || !request.getMembershipDuesPaid()) {
-                throw BusinessException.membershipDuesNotPaid(request.getEmail());
-            }
-*/
             if (request.getEmail() == null || request.getEmail().isEmpty()) {
                 throw BusinessException.emailRequired();
             }
