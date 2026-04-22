@@ -69,5 +69,35 @@ CREATE TABLE membership_fee (
                                 status           activity_status_type
 );
 
+CREATE TYPE payment_mode_type AS ENUM (
+    'CASH',
+    'MOBILE_BANKING',
+    'BANK_TRANSFER'
+);
+
+CREATE TABLE member_payment (
+                                id VARCHAR PRIMARY KEY,
+                                member_id VARCHAR NOT NULL,
+                                amount NUMERIC NOT NULL,
+                                payment_mode payment_mode_type NOT NULL,
+                                membership_fee_id VARCHAR NOT NULL,
+                                account_credited_id VARCHAR NOT NULL,
+                                creation_date DATE DEFAULT CURRENT_DATE
+);
+
+ALTER TABLE member_payment
+    ADD CONSTRAINT fk_member_payment_member
+        FOREIGN KEY (member_id) REFERENCES member(id);
+
+CREATE TABLE collectivity_transaction (
+                                          id VARCHAR PRIMARY KEY,
+                                          creation_date DATE DEFAULT CURRENT_DATE,
+                                          amount NUMERIC NOT NULL,
+                                          payment_mode payment_mode_type NOT NULL,
+                                          account_credited_id VARCHAR NOT NULL,
+                                          member_id VARCHAR NOT NULL
+);
+
+
 CREATE SEQUENCE membership_fee_id_seq START 3000;
 
