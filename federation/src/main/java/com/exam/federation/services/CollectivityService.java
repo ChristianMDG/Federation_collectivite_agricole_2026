@@ -5,11 +5,13 @@ import com.exam.federation.dto.*;
 
 import com.exam.federation.entity.CreateCollectivityStructure;
 import com.exam.federation.repository.CollectivityRepository;
+import com.exam.federation.repository.CollectivityTransactionRepository;
 import com.exam.federation.repository.MemberRepository;
 import com.exam.federation.repository.MembershipFeeRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,7 @@ public class CollectivityService {
     private final CollectivityRepository collectivityRepository;
     private final MemberRepository memberRepository;
     private final MembershipFeeRepository membershipFeeRepository;
+    private final CollectivityTransactionRepository transactionRepository;
 
     public List<CollectivityResponse> saveAll(List<CreateCollectivityRequest> requests) {
         List<CollectivityResponse> responses = new ArrayList<>();
@@ -108,5 +111,20 @@ public class CollectivityService {
             }
         }
         return membershipFeeRepository.saveAll(id, requests);
+    }
+
+    public List<CollectivityTransaction> getTransactions(String id, LocalDate from, LocalDate to) {
+
+        if (from == null || to == null) {
+            throw BusinessException.missingDateParameter();
+        }
+        if (from.isAfter(to)) {
+            throw BusinessException.invalidDateRange();
+        }
+        CollectivityResponse collectivity = collectivityRepository.findById(id);
+        if (collectivity == null) {
+            throw BusinessException.collectivityNotFound(id);
+        }
+        return transactionRepository.findByCollectivityIdAndDateRange(id, from, to);
     }
 }
