@@ -1,9 +1,7 @@
 package com.exam.federation.controllers;
 
 import com.exam.federation.Exception.BusinessException;
-import com.exam.federation.dto.AssignIdentificationRequest;
-import com.exam.federation.dto.CollectivityResponse;
-import com.exam.federation.dto.CreateCollectivityRequest;
+import com.exam.federation.dto.*;
 import com.exam.federation.services.CollectivityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,4 +50,13 @@ public class CollectivityController {
             return ResponseEntity.status(e.getStatusCode()).body(error);
         }
     }
+
+    @PostMapping("/{id}/membershipFees")
+    public ResponseEntity<List<MembershipFee>> createMembershipFees(
+            @PathVariable String id,
+            @RequestBody List<CreateMembershipFee> requests) {
+        List<MembershipFee> responses = collectivityService.createMembershipFees(id, requests);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responses);
+    }
+
 }

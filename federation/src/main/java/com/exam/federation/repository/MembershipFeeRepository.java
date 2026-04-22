@@ -3,23 +3,22 @@ package com.exam.federation.repository;
 import com.exam.federation.config.DataSource;
 import com.exam.federation.dto.CreateMembershipFee;
 import com.exam.federation.dto.MembershipFee;
+import com.exam.federation.entity.Enums.ActivityStatus;
+import com.exam.federation.entity.Enums.Frequency;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 @AllArgsConstructor
 public class MembershipFeeRepository {
+
+    private final DataSource dataSource;
+
     public List<MembershipFee> saveAll(String collectivityId, List<CreateMembershipFee> requests) {
-
-        private final DataSource dataSource;
-
-          p
-
         List<MembershipFee> responses = new ArrayList<>();
         String sql = """
             INSERT INTO membership_fee (
@@ -59,4 +58,5 @@ public class MembershipFeeRepository {
         }
         return responses;
     }
+
 }
