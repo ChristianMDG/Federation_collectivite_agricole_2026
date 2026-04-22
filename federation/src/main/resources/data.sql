@@ -49,3 +49,25 @@ ALTER TABLE collectivity
 CREATE SEQUENCE member_id_seq START 1000;
 create sequence collectivity_id_seq start 2000;
 
+CREATE TYPE frequency_type AS ENUM (
+    'MONTHLY',
+    'YEARLY'
+    );
+
+CREATE TYPE activity_status_type AS ENUM (
+    'ACTIVE',
+    'INACTIVE'
+    );
+
+CREATE TABLE membership_fee (
+                                id               VARCHAR PRIMARY KEY,
+                                collectivity_id  VARCHAR NOT NULL REFERENCES collectivity(id) ON DELETE CASCADE,
+                                eligible_from    DATE,
+                                frequency        frequency_type,
+                                amount           NUMERIC(10,2),
+                                label            VARCHAR(255),
+                                status           activity_status_type
+);
+
+CREATE SEQUENCE membership_fee_id_seq START 3000;
+
