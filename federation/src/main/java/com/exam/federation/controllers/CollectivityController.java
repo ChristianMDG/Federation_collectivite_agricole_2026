@@ -3,10 +3,12 @@ package com.exam.federation.controllers;
 import com.exam.federation.Exception.BusinessException;
 import com.exam.federation.dto.*;
 import com.exam.federation.services.CollectivityService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,4 +61,11 @@ public class CollectivityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
 
+    @GetMapping("/{id}/transactions")
+    public ResponseEntity<List<CollectivityTransaction>> getTransactions(
+            @PathVariable String id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(collectivityService.getTransactions(id, from, to));
+    }
 }

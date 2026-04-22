@@ -89,4 +89,12 @@ public class BusinessException extends RuntimeException {
     public static BusinessException invalidFrequency() {
         return new BusinessException(400, "Invalid frequency. Allowed: WEEKLY, MONTHLY, ANNUALLY, PUNCTUALLY");
     }
+
+    public static BusinessException invalidDateRange() {
+        return new BusinessException(400, "Invalid date range. 'from' must be before 'to'");
+    }
+
+    public static BusinessException missingDateParameter() {
+        return new BusinessException(400, "Both 'from' and 'to' date parameters are required");
+    }
 }
