@@ -80,4 +80,13 @@ public class BusinessException extends RuntimeException {
     public static BusinessException nameAlreadyExists(String name) {
         return new BusinessException(409, "Name already exists: " + name);
     }
+
+
+    public static BusinessException invalidAmount() {
+        return new BusinessException(400, "Amount must be greater than 0");
+    }
+
+    public static BusinessException invalidFrequency() {
+        return new BusinessException(400, "Invalid frequency. Allowed: WEEKLY, MONTHLY, ANNUALLY, PUNCTUALLY");
+    }
 }
