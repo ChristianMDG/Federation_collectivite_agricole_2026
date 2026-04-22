@@ -2,7 +2,6 @@ package com.exam.federation.controllers;
 
 import com.exam.federation.dto.CreateMember;
 import com.exam.federation.dto.MemberResponse;
-import com.exam.federation.entity.Member;
 import com.exam.federation.services.MemberService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,10 +16,6 @@ import java.util.List;
 public class MemberController {
     private final MemberService memberService;
 
-    @GetMapping("/hello")
-    public ResponseEntity<?> hello() {
-        return ResponseEntity.ok("Hello World");
-    }
     @PostMapping("/save")
     public ResponseEntity<List<MemberResponse>> createMembers(@RequestBody List<CreateMember> requests) {
         List<MemberResponse> responses = memberService.saveAll(requests);
