@@ -81,7 +81,6 @@ public class BusinessException extends RuntimeException {
         return new BusinessException(409, "Name already exists: " + name);
     }
 
-
     public static BusinessException invalidAmount() {
         return new BusinessException(400, "Amount must be greater than 0");
     }
