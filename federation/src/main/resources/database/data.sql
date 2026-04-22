@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> 26e59278bdae487dc740debab513f0be17bfb4bb
 INSERT INTO collectivity_transaction (
     id, collectivity_id, member_id, membership_fee_id,
     amount, payment_mode, transaction_date

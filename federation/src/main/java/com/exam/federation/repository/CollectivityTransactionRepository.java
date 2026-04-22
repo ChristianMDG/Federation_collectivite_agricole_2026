@@ -20,7 +20,6 @@ public class CollectivityTransactionRepository {
         this.dataSource = dataSource;
         this.memberRepository = memberRepository;
     }
-
     public List<CollectivityTransaction> findByCollectivityIdAndDateRange(String collectivityId, LocalDate from, LocalDate to) {
         List<CollectivityTransaction> transactions = new ArrayList<>();
         String sql = """
