@@ -2,10 +2,10 @@ package com.exam.federation.repository;
 
 import com.exam.federation.config.DataSource;
 import com.exam.federation.dto.*;
+import com.exam.federation.entity.AssignIdentificationRequest;
 import com.exam.federation.entity.CreateCollectivityStructure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,7 @@ public class CollectivityRepository {
 
     private final DataSource dataSource;
     private final MemberRepository memberRepository;
+
 
     public CollectivityResponse save(CreateCollectivityRequest request) {
         String sql = """
@@ -44,17 +45,15 @@ public class CollectivityRepository {
                 String id = rs.getString("id");
                 String location = rs.getString("location");
 
-                // Récupérer les membres
+
                 List<MemberResponse> members = getMembersByIds(request.getMembers());
 
-                // Construire la structure
                 CollectivityStructureResponse structureResponse = new CollectivityStructureResponse();
                 structureResponse.setPresident(memberRepository.findById(structure.getPresident()));
                 structureResponse.setVicePresident(memberRepository.findById(structure.getVicePresident()));
                 structureResponse.setTreasurer(memberRepository.findById(structure.getTreasurer()));
                 structureResponse.setSecretary(memberRepository.findById(structure.getSecretary()));
 
-                // Construire la réponse
                 CollectivityResponse response = new CollectivityResponse();
                 response.setId(id);
                 response.setNumber(null);
@@ -62,6 +61,8 @@ public class CollectivityRepository {
                 response.setLocation(location);
                 response.setStructure(structureResponse);
                 response.setMembers(members);
+
+                insertCollectivityMembers(id, request.getMembers());
 
                 return response;
             }
@@ -71,6 +72,25 @@ public class CollectivityRepository {
         }
         return null;
     }
+
+    private void insertCollectivityMembers(String collectivityId, List<String> memberIds) {
+        String sql = "INSERT INTO collectivity_members (collectivity_id, member_id) VALUES (?, ?)";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (String memberId : memberIds) {
+                ps.setString(1, collectivityId);
+                ps.setString(2, memberId);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public CollectivityResponse findById(String id) {
         String sql = """
@@ -87,24 +107,20 @@ public class CollectivityRepository {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                // Récupérer les IDs des membres de la structure
                 String presidentId = rs.getString("president_id");
                 String vicePresidentId = rs.getString("vice_president_id");
                 String treasurerId = rs.getString("treasurer_id");
                 String secretaryId = rs.getString("secretary_id");
 
-                // Récupérer les membres
                 List<String> memberIds = getMemberIdsByCollectivityId(id);
                 List<MemberResponse> members = getMembersByIds(memberIds);
 
-                // Construire la structure
                 CollectivityStructureResponse structure = new CollectivityStructureResponse();
                 structure.setPresident(memberRepository.findById(presidentId));
                 structure.setVicePresident(memberRepository.findById(vicePresidentId));
                 structure.setTreasurer(memberRepository.findById(treasurerId));
                 structure.setSecretary(memberRepository.findById(secretaryId));
 
-                // Construire la réponse
                 CollectivityResponse response = new CollectivityResponse();
                 response.setId(rs.getString("id"));
                 response.setNumber(rs.getString("number"));
@@ -122,43 +138,40 @@ public class CollectivityRepository {
         return null;
     }
 
+
     public boolean existsByNumber(String number) {
-        String sql = "SELECT COUNT(*) FROM collectivity WHERE number = ?";
+        String sql = "SELECT COUNT(number) FROM collectivity WHERE number = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setString(1, number);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return false;
     }
+
 
     public boolean existsByName(String name) {
         String sql = "SELECT COUNT(*) FROM collectivity WHERE name = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setString(1, name);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return false;
     }
+
 
     public CollectivityResponse assignIdentification(String id, AssignIdentificationRequest request) {
         String sql = """
@@ -188,6 +201,7 @@ public class CollectivityRepository {
         return null;
     }
 
+
     private List<MemberResponse> getMembersByIds(List<String> memberIds) {
         List<MemberResponse> members = new ArrayList<>();
         if (memberIds != null) {
@@ -201,20 +215,18 @@ public class CollectivityRepository {
         return members;
     }
 
+
     private List<String> getMemberIdsByCollectivityId(String collectivityId) {
         String sql = "SELECT member_id FROM collectivity_members WHERE collectivity_id = ?";
         List<String> memberIds = new ArrayList<>();
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setString(1, collectivityId);
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
                 memberIds.add(rs.getString("member_id"));
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
