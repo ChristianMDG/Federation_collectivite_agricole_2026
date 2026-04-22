@@ -37,7 +37,7 @@ public class CollectivityController {
         }
     }
 
-    @PatchMapping("/{id}/identification")
+    @PutMapping("/{id}/identification")
     public ResponseEntity<?> assignIdentification(
             @PathVariable String id,
             @RequestBody AssignIdentificationRequest request) {

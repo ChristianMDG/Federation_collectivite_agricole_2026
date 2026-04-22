@@ -1,6 +1,9 @@
 create type gender_type as enum ('MALE', 'FEMALE');
 
 create type member_occupation_type as enum ('JUNIOR', 'SENIOR', 'SECRETARY', 'TREASURER', 'VICE_PRESIDENT', 'PRESIDENT');
+CREATE TYPE frequency_type AS ENUM ('WEEKLY', 'MONTHLY', 'ANNUALLY', 'PUNCTUALLY');
+CREATE TYPE activity_status_type AS ENUM ('ACTIVE', 'INACTIVE');
+
 
 create table member
 (
@@ -12,7 +15,7 @@ create table member
     address               varchar(255),
     profession            varchar(255),
     phone_number          int,
-    email                 varchar(255) unique ,
+    email                 varchar(255) unique,
     occupation            member_occupation_type,
     registration_fee_paid BOOLEAN,
     membership_dues_paid  BOOLEAN,
@@ -42,10 +45,25 @@ CREATE TABLE collectivity_members
     PRIMARY KEY (collectivity_id, member_id)
 );
 
+CREATE TABLE membership_fee
+(
+    id              VARCHAR(255) PRIMARY KEY,
+    collectivity_id VARCHAR(255) REFERENCES collectivity (id),
+    eligible_from   DATE           NOT NULL,
+    frequency       frequency_type NOT NULL,
+    amount          DECIMAL(15, 2) NOT NULL,
+    label           VARCHAR(255),
+    status          activity_status_type DEFAULT 'ACTIVE'
+);
+
 ALTER TABLE collectivity
     ADD COLUMN number VARCHAR(50) UNIQUE,
     ADD COLUMN name   VARCHAR(255) UNIQUE;
 
+
+
 CREATE SEQUENCE member_id_seq START 1000;
 create sequence collectivity_id_seq start 2000;
+CREATE SEQUENCE IF NOT EXISTS membership_fee_id_seq START 1000;
+
 
