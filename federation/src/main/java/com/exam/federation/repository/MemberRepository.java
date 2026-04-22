@@ -5,6 +5,7 @@ import com.exam.federation.dto.CreateMember;
 import com.exam.federation.dto.MemberResponse;
 import com.exam.federation.entity.Enums.Gender;
 import com.exam.federation.entity.Enums.MemberOccupation;
+import com.exam.federation.entity.Member;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -15,20 +16,24 @@ import java.util.List;
 @Repository
 @AllArgsConstructor
 public class MemberRepository {
+
     private final DataSource dataSource;
 
     public MemberResponse save(CreateMember request) {
+
         String sql = """
-        INSERT INTO member (
-            id, firstname, lastname, birthday, gender, address,
-            profession, phone_number, email, occupation,
-            registration_fee_paid, membership_dues_paid, collectivity_id
-        ) VALUES (
-           'mem_' || nextval('member_id_seq'),
-            ?, ?, ?::DATE, ?::gender_type, ?, ?, ?, ?, ?::member_occupation_type, ?, ?, ?
-        )
-        RETURNING *
-    """;
+            INSERT INTO member (
+                id, firstname, lastname, birthday, gender, address,
+                profession, phone_number, email, occupation,
+                registration_fee_paid, membership_dues_paid, collectivity_id
+            )
+            VALUES (
+                'mem_' || REPLACE(gen_random_uuid()::TEXT, '-', ''),
+                ?, ?, ?::DATE, ?::gender_type, ?, ?, ?, ?, ?::member_occupation_type, ?, ?, ?
+            )
+            RETURNING id, firstname, lastname, birthday, gender,
+                      address, profession, phone_number, email, occupation
+        """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -47,7 +52,11 @@ public class MemberRepository {
             stmt.setString(12, request.getCollectivityIdentifier());
 
             ResultSet rs = stmt.executeQuery();
-            if (!rs.next()) return null;
+
+            if (!rs.next()) {
+                return null;
+            }
+
             MemberResponse member = new MemberResponse();
             member.setId(rs.getString("id"));
             member.setFirstName(rs.getString("firstname"));
@@ -78,19 +87,23 @@ public class MemberRepository {
         List<MemberResponse> responses = new ArrayList<>();
 
         for (CreateMember request : requests) {
-            if (request.getRegistrationFeePaid() == null || !request.getRegistrationFeePaid()) {
+
+            if (Boolean.FALSE.equals(request.getRegistrationFeePaid())) {
                 throw new RuntimeException("Registration fee not paid");
             }
-            if (request.getMembershipDuesPaid() == null || !request.getMembershipDuesPaid()) {
+
+            if (Boolean.FALSE.equals(request.getMembershipDuesPaid())) {
                 throw new RuntimeException("Membership dues not paid");
             }
-            if (request.getReferees() != null && !request.getReferees().isEmpty()) {
+
+            if (request.getReferees() != null) {
                 for (String refereeId : request.getReferees()) {
                     if (!existsById(refereeId)) {
                         throw new RuntimeException("Referee not found: " + refereeId);
                     }
                 }
             }
+
             responses.add(save(request));
         }
 
@@ -98,10 +111,11 @@ public class MemberRepository {
     }
 
     public boolean existsById(String id) {
+
         String sql = "SELECT COUNT(id) FROM member WHERE id = ?";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
             ResultSet rs = ps.executeQuery();
@@ -110,23 +124,26 @@ public class MemberRepository {
                 return rs.getInt(1) > 0;
             }
 
+            return false;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return false;
     }
 
     private void addReferees(String memberId, List<String> refereeIds) {
+
         String sql = "INSERT INTO member_referees (member_id, referee_id) VALUES (?, ?)";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (String refereeId : refereeIds) {
                 ps.setString(1, memberId);
                 ps.setString(2, refereeId);
                 ps.addBatch();
             }
+
             ps.executeBatch();
 
         } catch (SQLException e) {
@@ -135,18 +152,19 @@ public class MemberRepository {
     }
 
     private List<MemberResponse> findRefereesByMemberId(String memberId) {
+
         String sql = """
-        SELECT r.id, r.firstname, r.lastname, r.birthday, r.gender, 
-               r.address, r.profession, r.phone_number, r.email, r.occupation
-        FROM member_referees mr
-        JOIN member r ON mr.referee_id = r.id
-        WHERE mr.member_id = ?
-    """;
+            SELECT r.id, r.firstname, r.lastname, r.birthday, r.gender,
+                   r.address, r.profession, r.phone_number, r.email, r.occupation
+            FROM member_referees mr
+            JOIN member r ON mr.referee_id = r.id
+            WHERE mr.member_id = ?
+        """;
 
         List<MemberResponse> referees = new ArrayList<>();
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, memberId);
             ResultSet rs = ps.executeQuery();
@@ -164,6 +182,7 @@ public class MemberRepository {
                 referee.setEmail(rs.getString("email"));
                 referee.setOccupation(MemberOccupation.valueOf(rs.getString("occupation")));
                 referee.setReferees(new ArrayList<>());
+
                 referees.add(referee);
             }
 
@@ -172,5 +191,43 @@ public class MemberRepository {
         }
 
         return referees;
+    }
+
+    public Member findById(String id) {
+
+        try (Connection conn = dataSource.getConnection()) {
+
+            PreparedStatement ps = conn.prepareStatement("""
+            SELECT id, first_name, last_name, birth_date, gender,
+                   address, profession, phone_number, email, occupation
+            FROM member
+            WHERE id = ?
+        """);
+
+            ps.setString(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Member member = new Member();
+                member.setId(rs.getString("id"));
+                member.setFirstName(rs.getString("first_name"));
+                member.setLastName(rs.getString("last_name"));
+                member.setBirthDate(rs.getDate("birth_date").toLocalDate());
+                member.setGender(Gender.valueOf(rs.getString("gender")));
+                member.setAddress(rs.getString("address"));
+                member.setProfession(rs.getString("profession"));
+                member.setPhoneNumber(rs.getString("phone_number"));
+                member.setEmail(rs.getString("email"));
+                member.setOccupation(MemberOccupation.valueOf(rs.getString("occupation")));
+
+                return member;
+            }
+
+            throw new RuntimeException("Member with id " + id + " not found");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

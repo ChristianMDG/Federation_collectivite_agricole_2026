@@ -1,6 +1,7 @@
 package com.exam.federation.services;
 
 import com.exam.federation.dto.CreateMember;
+
 import com.exam.federation.dto.MemberResponse;
 import com.exam.federation.entity.Member;
 import com.exam.federation.repository.MemberRepository;
@@ -14,7 +15,7 @@ import java.util.List;
 public class MemberService {
     private final MemberRepository memberRepository;
 
-    public List<MemberResponse> saveAll(List<CreateMember> requests) {
-        return memberRepository.saveAll(requests);
+    public MemberResponse saveMember(CreateMember request) {
+        return memberRepository.save(request);
     }
 }

@@ -36,3 +36,4 @@ create table collectivity
 );
 
 CREATE SEQUENCE member_id_seq START 1000;
+
