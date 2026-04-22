@@ -4,7 +4,6 @@ create type member_occupation_type as enum ('JUNIOR', 'SENIOR', 'SECRETARY', 'TR
 CREATE TYPE frequency_type AS ENUM ('WEEKLY', 'MONTHLY', 'ANNUALLY', 'PUNCTUALLY');
 CREATE TYPE activity_status_type AS ENUM ('ACTIVE', 'INACTIVE');
 
-
 create table member
 (
     id                    varchar primary key,
@@ -59,7 +58,6 @@ CREATE TABLE membership_fee
 ALTER TABLE collectivity
     ADD COLUMN number VARCHAR(50) UNIQUE,
     ADD COLUMN name   VARCHAR(255) UNIQUE;
-
 
 
 CREATE SEQUENCE member_id_seq START 1000;
