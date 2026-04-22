@@ -91,7 +91,6 @@ public class CollectivityRepository {
         }
     }
 
-
     public CollectivityResponse findById(String id) {
         String sql = """
             SELECT id, number, name, location, 
@@ -219,7 +218,6 @@ public class CollectivityRepository {
     private List<String> getMemberIdsByCollectivityId(String collectivityId) {
         String sql = "SELECT member_id FROM collectivity_members WHERE collectivity_id = ?";
         List<String> memberIds = new ArrayList<>();
-
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, collectivityId);

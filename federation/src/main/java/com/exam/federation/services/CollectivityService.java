@@ -33,19 +33,17 @@ public class CollectivityService {
     }
 
     public CollectivityResponse save(CreateCollectivityRequest request) {
-        // Vérifier l'approbation
+
         if (request.getFederationApproval() == null || !request.getFederationApproval()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Collectivity without federation approval");
         }
 
-        // Vérifier la structure
         if (request.getStructure() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Structure missing");
         }
 
-        // Vérifier que les membres existent
         if (request.getMembers() != null) {
             for (String memberId : request.getMembers()) {
                 if (!memberRepository.existsById(memberId)) {
@@ -54,7 +52,6 @@ public class CollectivityService {
                 }
             }
         }
-
 
         CreateCollectivityStructure structure = request.getStructure();
         if (!memberRepository.existsById(structure.getPresident())) {
@@ -78,32 +75,28 @@ public class CollectivityService {
     }
 
     public CollectivityResponse assignIdentification(String id, AssignIdentificationRequest request) {
-        // Vérifier que la collectivité existe
+
         CollectivityResponse existing = collectivityRepository.findById(id);
         if (existing == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Collectivity not found");
         }
 
-        // Vérifier qu'elle n'a pas déjà un numéro
         if (existing.getNumber() != null && !existing.getNumber().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Collectivity already has a number: " + existing.getNumber());
         }
 
-        // Vérifier qu'elle n'a pas déjà un nom
         if (existing.getName() != null && !existing.getName().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Collectivity already has a name: " + existing.getName());
         }
 
-        // Vérifier que le numéro n'existe pas déjà (conflit)
         if (collectivityRepository.existsByNumber(request.getNumber())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Number already exists: " + request.getNumber());
         }
 
-        // Vérifier que le nom n'existe pas déjà (conflit)
         if (collectivityRepository.existsByName(request.getName())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Name already exists: " + request.getName());
