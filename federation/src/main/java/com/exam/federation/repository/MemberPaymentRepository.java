@@ -2,80 +2,125 @@ package com.exam.federation.repository;
 
 import com.exam.federation.config.DataSource;
 import com.exam.federation.dto.CreateMemberPayment;
+import com.exam.federation.dto.FinancialAccount;
 import com.exam.federation.dto.MemberPayment;
 import com.exam.federation.entity.Enums.PaymentMode;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class MemberPaymentRepository {
 
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     public MemberPaymentRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public List<MemberPayment> createPayments(String memberId, List<CreateMemberPayment> requests) {
-
+    public List<MemberPayment> saveAll(String memberId, List<CreateMemberPayment> requests, String collectivityId) {
         List<MemberPayment> responses = new ArrayList<>();
+        LocalDate today = LocalDate.now();
 
         String paymentSql = """
-            INSERT INTO member_payment
-            (member_id, amount, payment_mode, membership_fee_id, account_credited_id, creation_date)
-            VALUES (?, ?, ?, ?, ?, CURRENT_DATE)
-            RETURNING id, amount, payment_mode, account_credited_id, creation_date
+            INSERT INTO member_payment (
+                id, member_id, membership_fee_id, amount, payment_mode, payment_date
+            ) VALUES (
+                'mp_' || nextval('member_payment_id_seq'),
+                ?, ?, ?, ?::payment_mode_type, ?
+            )
+            RETURNING id, amount, payment_mode, payment_date
         """;
 
         String transactionSql = """
-            INSERT INTO collectivity_transaction
-            (creation_date, amount, payment_mode, account_credited_id, member_id)
-            VALUES (CURRENT_DATE, ?, ?, ?, ?)
+            INSERT INTO collectivity_transaction (
+                id, collectivity_id, member_id, membership_fee_id, amount, payment_mode, transaction_date
+            ) VALUES (
+                'tr_' || nextval('transaction_id_seq'),
+                ?, ?, ?, ?, ?::payment_mode_type, ?
+            )
         """;
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement psPayment = conn.prepareStatement(paymentSql);
-             PreparedStatement psTransaction = conn.prepareStatement(transactionSql)) {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
 
-            for (CreateMemberPayment req : requests) {
+            for (CreateMemberPayment request : requests) {
+                try (PreparedStatement ps = conn.prepareStatement(paymentSql)) {
+                    ps.setString(1, memberId);
+                    ps.setString(2, request.getMembershipFeeIdentifier());
+                    ps.setDouble(3, request.getAmount());
+                    ps.setString(4, request.getPaymentMode().name());
+                    ps.setDate(5, Date.valueOf(today));
 
-                psPayment.setString(1, memberId);
-                psPayment.setBigDecimal(2, req.getAmount());
-                psPayment.setString(3, req.getPaymentMode().name());
-                psPayment.setString(4, req.getMembershipFeeIdentifier());
-                psPayment.setString(5, req.getAccountCreditedIdentifier());
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()) {
+                        MemberPayment payment = new MemberPayment();
+                        payment.setId(rs.getString("id"));
+                        payment.setAmount(rs.getInt("amount"));
+                        payment.setPaymentMode(PaymentMode.valueOf(rs.getString("payment_mode")));
+                        payment.setCreationDate(rs.getDate("payment_date").toLocalDate());
 
-                ResultSet rs = psPayment.executeQuery();
+                        FinancialAccount account = new FinancialAccount();
+                        account.setId(request.getAccountCreditedIdentifier());
+                        account.setAmount(0.0);
+                        payment.setAccountCredited(account);
 
-                if (rs.next()) {
-                    MemberPayment payment = new MemberPayment();
-                    payment.setId(rs.getString("id"));
-                    payment.setAmount(rs.getBigDecimal("amount"));
-                    payment.setPaymentMode(PaymentMode.valueOf(rs.getString("payment_mode")));
-                    payment.setAccountCreditedIdentifier(rs.getString("account_credited_id"));
-                    payment.setCreationDate(rs.getDate("creation_date").toLocalDate());
-
-                    responses.add(payment);
+                        responses.add(payment);
+                    }
                 }
 
-                psTransaction.setBigDecimal(1, req.getAmount());
-                psTransaction.setString(2, req.getPaymentMode().name());
-                psTransaction.setString(3, req.getAccountCreditedIdentifier());
-                psTransaction.setString(4, memberId);
-
-                psTransaction.executeUpdate();
+                try (PreparedStatement ps = conn.prepareStatement(transactionSql)) {
+                    ps.setString(1, collectivityId);
+                    ps.setString(2, memberId);
+                    ps.setString(3, request.getMembershipFeeIdentifier());
+                    ps.setDouble(4, request.getAmount());
+                    ps.setString(5, request.getPaymentMode().name());
+                    ps.setDate(6, Date.valueOf(today));
+                    ps.executeUpdate();
+                }
             }
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error creating payments", e);
+            conn.commit();
+            conn.setAutoCommit(true);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error creating payment: " + e.getMessage());
         }
 
         return responses;
+    }
+
+    public String findCollectivityIdByMemberId(String memberId) {
+        String sql = "SELECT collectivity_id FROM member WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("collectivity_id");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+    public boolean membershipFeeExists(String id) {
+        String sql = "SELECT COUNT(id) FROM membership_fee WHERE id = ? AND status = 'ACTIVE'";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 }

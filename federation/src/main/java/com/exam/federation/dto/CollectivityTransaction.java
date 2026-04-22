@@ -1,5 +1,6 @@
 package com.exam.federation.dto;
 
+import com.exam.federation.entity.Enums.PaymentMode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,6 @@ public class CollectivityTransaction {
     private String id;
     private LocalDate transactionDate;
     private Double amount;
-    private String paymentMode;
+    private PaymentMode paymentMode;
     private MemberResponse memberDebited;
 }

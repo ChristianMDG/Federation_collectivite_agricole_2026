@@ -2,7 +2,7 @@ create type gender_type as enum ('MALE', 'FEMALE');
 create type member_occupation_type as enum ('JUNIOR', 'SENIOR', 'SECRETARY', 'TREASURER', 'VICE_PRESIDENT', 'PRESIDENT');
 CREATE TYPE frequency_type AS ENUM ('WEEKLY', 'MONTHLY', 'ANNUALLY', 'PUNCTUALLY');
 CREATE TYPE activity_status_type AS ENUM ('ACTIVE', 'INACTIVE');
-
+CREATE TYPE payment_mode_type AS ENUM ('CASH', 'MOBILE_BANKING', 'BANK_TRANSFER');
 create table IF NOT EXISTS member
 (
     id                    varchar primary key,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS membership_fee
     label           VARCHAR(255),
     status          activity_status_type DEFAULT 'ACTIVE'
 );
-CREATE TABLE  IF NOT EXISTS membership_fee
+CREATE TABLE IF NOT EXISTS membership_fee
 (
     id              VARCHAR PRIMARY KEY,
     collectivity_id VARCHAR NOT NULL REFERENCES collectivity (id) ON DELETE CASCADE,
@@ -87,12 +87,26 @@ CREATE TABLE IF NOT EXISTS collectivity_transaction
     member_id         VARCHAR(255) REFERENCES member (id),
     membership_fee_id VARCHAR(255) REFERENCES membership_fee (id),
     amount            DECIMAL(15, 2) NOT NULL,
-    payment_mode      VARCHAR(50)    NOT NULL,
+    payment_mode      payment_mode_type NOT NULL,
     transaction_date  DATE           NOT NULL,
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS member_payment
+(
+    id                VARCHAR(255) PRIMARY KEY   DEFAULT 'mp_' || nextval('member_payment_id_seq'),
+    member_id         VARCHAR(255)      NOT NULL,
+    membership_fee_id VARCHAR(255),
+    amount            DECIMAL(15, 2)    NOT NULL CHECK (amount > 0),
+    payment_mode      payment_mode_type NOT NULL,
+    payment_date      DATE              NOT NULL DEFAULT CURRENT_DATE,
+    created_at        TIMESTAMP                  DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_member_payment_member FOREIGN KEY (member_id) REFERENCES member (id) ON DELETE CASCADE,
+    CONSTRAINT fk_member_payment_fee FOREIGN KEY (membership_fee_id) REFERENCES membership_fee (id) ON DELETE SET NULL
 );
 
 CREATE SEQUENCE IF NOT EXISTS member_id_seq START 1000;
 CREATE SEQUENCE IF NOT EXISTS collectivity_id_seq start 2000;
 CREATE SEQUENCE IF NOT EXISTS membership_fee_id_seq START 3000;
 CREATE SEQUENCE IF NOT EXISTS transaction_id_seq START 1000;
+CREATE SEQUENCE IF NOT EXISTS member_payment_id_seq START 1000;
+
