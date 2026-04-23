@@ -214,7 +214,7 @@ paths:
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/Collectivity'
+                  $ref: '#/components/schemas/CollectivityResponse'
           404:
             description: Collectivity not found.
 
@@ -269,6 +269,23 @@ components:
         - $ref: '#/components/schemas/CollectivityInformation'
       properties:
         id:
+          type: string
+        location:
+          type: string
+        structure:
+          $ref: '#/components/schemas/CollectivityStructure'
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+    CollectivityResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        number:
           type: string
         location:
           type: string
