@@ -128,11 +128,22 @@ public class CollectivityService {
         return transactionRepository.findByCollectivityIdAndDateRange(id, from, to);
     }
 
+
     public List<FinancialAccount> getFinancialAccounts(String collectivityId) {
         if (collectivityRepository.findById(collectivityId) == null) {
             throw BusinessException.collectivityNotFound(collectivityId);
         }
 
         return financialAccountRepository.findByCollectivityId(collectivityId);
+    }
+    public CollectivityResponse findById(String id) {
+        CollectivityResponse collectivity = collectivityRepository.findById(id);
+
+        if (collectivity == null) {
+            throw BusinessException.collectivityNotFound(id);
+        }
+
+        return collectivity;
+
     }
 }

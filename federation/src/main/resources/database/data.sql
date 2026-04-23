@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> 136bb078437ff1826707ea8d31af680d175db84d
 -- Mettre à jour collectivity_id pour tous les membres qui sont dans collectivity_members
 UPDATE member m
 SET collectivity_id = (
@@ -12,6 +15,7 @@ WHERE EXISTS (
 );
 
 -- Vérifier
+<<<<<<< HEAD
 SELECT id, firstname, collectivity_id FROM member;
 
 INSERT INTO collectivity_transaction (
@@ -28,3 +32,6 @@ INSERT INTO collectivity_transaction (
          );
 
 }
+=======
+SELECT id, firstname, collectivity_id FROM member;
+>>>>>>> 136bb078437ff1826707ea8d31af680d175db84d

@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -69,9 +70,24 @@ public class CollectivityController {
         return ResponseEntity.ok(collectivityService.getTransactions(id, from, to));
     }
 
+
     @GetMapping("/{id}/financialAccounts")
     public ResponseEntity<List<FinancialAccount>> getFinancialAccounts(@PathVariable String id) {
         List<FinancialAccount> accounts = collectivityService.getFinancialAccounts(id);
         return ResponseEntity.ok(accounts);
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCollectivityById(@PathVariable String id) {
+        try {
+            CollectivityResponse response = collectivityService.findById(id);
+            return ResponseEntity.ok(response);
+
+        } catch (BusinessException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of(
+                            "status", e.getStatusCode(),
+                            "message", e.getMessage()
+                    ));
+        }
     }
 }

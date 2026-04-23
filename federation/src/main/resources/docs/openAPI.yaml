@@ -199,6 +199,24 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MemberPayment'
+    '/collectivities/{id}':
+      get:
+        summary: Collectivity by collectivityId
+        parameters:
+          - in: path
+            name: id
+            schema:
+              type: string
+            required: true
+        responses:
+          200:
+            description: Retrieve collectivity by collectivityId with list of members
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CollectivityResponse'
+          404:
+            description: Collectivity not found.
 
 components:
   schemas:
@@ -251,6 +269,23 @@ components:
         - $ref: '#/components/schemas/CollectivityInformation'
       properties:
         id:
+          type: string
+        location:
+          type: string
+        structure:
+          $ref: '#/components/schemas/CollectivityStructure'
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+    CollectivityResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        number:
           type: string
         location:
           type: string
