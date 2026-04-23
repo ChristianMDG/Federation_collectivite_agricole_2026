@@ -11,8 +11,9 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CollectivityTransaction {
     private String id;
-    private LocalDate transactionDate;
+    private LocalDate creationDate;
     private Double amount;
     private PaymentMode paymentMode;
+    private FinancialAccount accountCredited;
     private MemberResponse memberDebited;
 }

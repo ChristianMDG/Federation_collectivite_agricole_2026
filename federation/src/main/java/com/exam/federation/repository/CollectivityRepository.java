@@ -22,14 +22,14 @@ public class CollectivityRepository {
 
     public CollectivityResponse save(CreateCollectivityRequest request) {
         String sql = """
-                    INSERT INTO collectivity (
-                        id, location, president_id, vice_president_id, treasurer_id, secretary_id
-                    ) VALUES (
-                        'col_' || nextval('collectivity_id_seq'),
-                        ?, ?, ?, ?, ?
-                    )
-                    RETURNING id, location
-                """;
+            INSERT INTO collectivity (
+                id, location, president_id, vice_president_id, treasurer_id, secretary_id
+            ) VALUES (
+                'col_' || nextval('collectivity_id_seq'),
+                ?, ?, ?, ?, ?
+            )
+            RETURNING id, location
+        """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -47,17 +47,23 @@ public class CollectivityRepository {
                 String id = rs.getString("id");
                 String location = rs.getString("location");
 
+                // 1. Insérer les membres dans collectivity_members
                 insertCollectivityMembers(id, request.getMembers());
 
+                // 2. Mettre à jour collectivity_id dans la table member
+                updateMemberCollectivityId(id, request.getMembers());
 
+                // 3. Récupérer les membres
                 List<MemberResponse> members = getMembersByIds(request.getMembers());
 
+                // 4. Construire la structure
                 CollectivityStructureResponse structureResponse = new CollectivityStructureResponse();
                 structureResponse.setPresident(memberRepository.findById(structure.getPresident()));
                 structureResponse.setVicePresident(memberRepository.findById(structure.getVicePresident()));
                 structureResponse.setTreasurer(memberRepository.findById(structure.getTreasurer()));
                 structureResponse.setSecretary(memberRepository.findById(structure.getSecretary()));
 
+                // 5. Construire la réponse
                 CollectivityResponse response = new CollectivityResponse();
                 response.setId(id);
                 response.setNumber(null);
@@ -93,13 +99,32 @@ public class CollectivityRepository {
         }
     }
 
+    // ✅ Nouvelle méthode pour mettre à jour collectivity_id dans member
+    private void updateMemberCollectivityId(String collectivityId, List<String> memberIds) {
+        String sql = "UPDATE member SET collectivity_id = ? WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (String memberId : memberIds) {
+                ps.setString(1, collectivityId);
+                ps.setString(2, memberId);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la mise à jour du collectivity_id des membres: " + e.getMessage());
+        }
+    }
+
     public CollectivityResponse findById(String id) {
         String sql = """
-                    SELECT id, number, name, location, 
-                           president_id, vice_president_id, treasurer_id, secretary_id
-                    FROM collectivity 
-                    WHERE id = ?
-                """;
+            SELECT id, number, name, location, 
+                   president_id, vice_president_id, treasurer_id, secretary_id
+            FROM collectivity 
+            WHERE id = ?
+        """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -140,7 +165,7 @@ public class CollectivityRepository {
     }
 
     public boolean existsByNumber(String number) {
-        String sql = "SELECT COUNT(number) FROM collectivity WHERE number = ?";
+        String sql = "SELECT COUNT(*) FROM collectivity WHERE number = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -156,7 +181,7 @@ public class CollectivityRepository {
     }
 
     public boolean existsByName(String name) {
-        String sql = "SELECT COUNT(name) FROM collectivity WHERE name = ?";
+        String sql = "SELECT COUNT(*) FROM collectivity WHERE name = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -171,16 +196,15 @@ public class CollectivityRepository {
         return false;
     }
 
-
     public CollectivityResponse assignIdentification(String id, AssignIdentificationRequest request) {
         String sql = """
-                    UPDATE collectivity 
-                    SET number = ?, name = ? 
-                    WHERE id = ? 
-                      AND (number IS NULL OR number = '')
-                      AND (name IS NULL OR name = '')
-                    RETURNING id, number, name, location
-                """;
+            UPDATE collectivity 
+            SET number = ?, name = ? 
+            WHERE id = ? 
+              AND (number IS NULL OR number = '')
+              AND (name IS NULL OR name = '')
+            RETURNING id, number, name, location
+        """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -1,13 +1,22 @@
 package com.exam.federation.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class FinancialAccount {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CashAccount.class, name = "CASH"),
+        @JsonSubTypes.Type(value = MobileBankingAccount.class, name = "MOBILE_BANKING"),
+        @JsonSubTypes.Type(value = BankAccount.class, name = "BANK_TRANSFER")
+})
+public abstract class FinancialAccount {
     private String id;
-    private Double amount;
+    private Integer amount;
+
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public Integer getAmount() { return amount; }
+    public void setAmount(Integer amount) { this.amount = amount; }
 }

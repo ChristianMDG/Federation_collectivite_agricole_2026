@@ -16,31 +16,33 @@ import java.util.List;
 public class MemberPaymentRepository {
 
     private final DataSource dataSource;
+    private final FinancialAccountRepository financialAccountRepository;
 
-    public MemberPaymentRepository(DataSource dataSource) {
+    public MemberPaymentRepository(DataSource dataSource, FinancialAccountRepository financialAccountRepository) {
         this.dataSource = dataSource;
+        this.financialAccountRepository = financialAccountRepository;
     }
 
-    public List<MemberPayment> saveAll(String memberId, List<CreateMemberPayment> requests, String collectivityId) {
+    public List<MemberPayment> saveAll(String memberId, List<CreateMemberPayment> requests, String collectivityId, String membershipFeeId) {
         List<MemberPayment> responses = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
         String paymentSql = """
             INSERT INTO member_payment (
-                id, member_id, membership_fee_id, amount, payment_mode, payment_date
+                id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date
             ) VALUES (
                 'mp_' || nextval('member_payment_id_seq'),
-                ?, ?, ?, ?::payment_mode_type, ?
+                ?, ?, ?, ?, ?::payment_mode_type, ?
             )
-            RETURNING id, amount, payment_mode, payment_date
+            RETURNING id, amount, payment_mode, creation_date
         """;
 
         String transactionSql = """
             INSERT INTO collectivity_transaction (
-                id, collectivity_id, member_id, membership_fee_id, amount, payment_mode, transaction_date
+                id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date
             ) VALUES (
                 'tr_' || nextval('transaction_id_seq'),
-                ?, ?, ?, ?, ?::payment_mode_type, ?
+                ?, ?, ?, ?, ?, ?::payment_mode_type, ?
             )
         """;
 
@@ -48,12 +50,14 @@ public class MemberPaymentRepository {
             conn.setAutoCommit(false);
 
             for (CreateMemberPayment request : requests) {
+                // 1. Insérer le paiement
                 try (PreparedStatement ps = conn.prepareStatement(paymentSql)) {
                     ps.setString(1, memberId);
-                    ps.setString(2, request.getMembershipFeeIdentifier());
-                    ps.setDouble(3, request.getAmount());
-                    ps.setString(4, request.getPaymentMode().name());
-                    ps.setDate(5, Date.valueOf(today));
+                    ps.setString(2, membershipFeeId);
+                    ps.setString(3, request.getAccountCreditedIdentifier());
+                    ps.setDouble(4, request.getAmount());
+                    ps.setString(5, request.getPaymentMode().name());
+                    ps.setDate(6, Date.valueOf(today));
 
                     ResultSet rs = ps.executeQuery();
                     if (rs.next()) {
@@ -61,43 +65,62 @@ public class MemberPaymentRepository {
                         payment.setId(rs.getString("id"));
                         payment.setAmount(rs.getInt("amount"));
                         payment.setPaymentMode(PaymentMode.valueOf(rs.getString("payment_mode")));
-                        payment.setCreationDate(rs.getDate("payment_date").toLocalDate());
+                        payment.setCreationDate(rs.getDate("creation_date").toLocalDate());
 
-                        FinancialAccount account = new FinancialAccount();
-                        account.setId(request.getAccountCreditedIdentifier());
-                        account.setAmount(0.0);
+                        FinancialAccount account = financialAccountRepository.findById(request.getAccountCreditedIdentifier());
                         payment.setAccountCredited(account);
 
                         responses.add(payment);
                     }
                 }
 
+
                 try (PreparedStatement ps = conn.prepareStatement(transactionSql)) {
                     ps.setString(1, collectivityId);
                     ps.setString(2, memberId);
-                    ps.setString(3, request.getMembershipFeeIdentifier());
-                    ps.setDouble(4, request.getAmount());
-                    ps.setString(5, request.getPaymentMode().name());
-                    ps.setDate(6, Date.valueOf(today));
+                    ps.setString(3, membershipFeeId);
+                    ps.setString(4, request.getAccountCreditedIdentifier());
+                    ps.setDouble(5, request.getAmount());
+                    ps.setString(6, request.getPaymentMode().name());
+                    ps.setDate(7, Date.valueOf(today));
                     ps.executeUpdate();
                 }
+
+                financialAccountRepository.updateAmount(request.getAccountCreditedIdentifier(), request.getAmount());
             }
 
             conn.commit();
             conn.setAutoCommit(true);
 
         } catch (SQLException e) {
-            throw new RuntimeException("Error creating payment: " + e.getMessage());
+            throw new RuntimeException("Error creating payment: " + e.getMessage(), e);
         }
 
         return responses;
     }
 
     public String findCollectivityIdByMemberId(String memberId) {
-        String sql = "SELECT collectivity_id FROM member WHERE id = ?";
+
+        String sql1 = "SELECT collectivity_id FROM member WHERE id = ?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql1)) {
+            ps.setString(1, memberId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String collectivityId = rs.getString("collectivity_id");
+                if (collectivityId != null && !collectivityId.isEmpty()) {
+                    return collectivityId;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        String sql2 = "SELECT collectivity_id FROM collectivity_members WHERE member_id = ? LIMIT 1";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql2)) {
             ps.setString(1, memberId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -106,8 +129,10 @@ public class MemberPaymentRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         return null;
     }
+
     public boolean membershipFeeExists(String id) {
         String sql = "SELECT COUNT(id) FROM membership_fee WHERE id = ? AND status = 'ACTIVE'";
 
@@ -122,5 +147,21 @@ public class MemberPaymentRepository {
             throw new RuntimeException(e);
         }
         return false;
+    }
+
+    public String getMembershipFeeIdByCollectivity(String collectivityId) {
+        String sql = "SELECT id FROM membership_fee WHERE collectivity_id = ? AND status = 'ACTIVE' LIMIT 1";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, collectivityId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("id");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 }

@@ -50,15 +50,24 @@ public class MemberService {
 
 
     public List<MemberPayment> createPayments(String memberId, List<CreateMemberPayment> requests) {
+        // 1. Vérifier que le membre existe
         if (!memberRepository.existsById(memberId)) {
             throw BusinessException.memberNotFound(memberId);
         }
 
+        // 2. Récupérer la collectivité du membre
         String collectivityId = paymentRepository.findCollectivityIdByMemberId(memberId);
         if (collectivityId == null) {
             throw new BusinessException(400, "Member is not associated with any collectivity");
         }
 
+        // 3. Récupérer l'ID de la cotisation active
+        String membershipFeeId = paymentRepository.getMembershipFeeIdByCollectivity(collectivityId);
+        if (membershipFeeId == null) {
+            throw new BusinessException(404, "No active membership fee found for this collectivity");
+        }
+
+        // 4. Valider chaque paiement
         for (CreateMemberPayment request : requests) {
             if (request.getAmount() == null || request.getAmount() <= 0) {
                 throw BusinessException.invalidAmount();
@@ -71,6 +80,7 @@ public class MemberService {
             }
         }
 
-        return paymentRepository.saveAll(memberId, requests, collectivityId);
+        // 5. Appeler saveAll avec 4 paramètres (memberId, requests, collectivityId, membershipFeeId)
+        return paymentRepository.saveAll(memberId, requests, collectivityId, membershipFeeId);
     }
 }
