@@ -38,8 +38,8 @@ CREATE TYPE bank_type AS ENUM ('BRED', 'MCB', 'BMOI', 'BOA', 'BGFI', 'AFG', 'ACC
 -- =====================================================
 -- 4. Créer les séquences
 -- =====================================================
-CREATE SEQUENCE member_id_seq START 1000;
-CREATE SEQUENCE collectivity_id_seq START 2000;
+CREATE SEQUENCE member_id_seq START 1;
+CREATE SEQUENCE collectivity_id_seq START 1;
 CREATE SEQUENCE membership_fee_id_seq START 3000;
 CREATE SEQUENCE transaction_id_seq START 1000;
 CREATE SEQUENCE member_payment_id_seq START 1000;
