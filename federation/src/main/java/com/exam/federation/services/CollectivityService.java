@@ -128,4 +128,14 @@ public class CollectivityService {
         }
         return transactionRepository.findByCollectivityIdAndDateRange(id, from, to);
     }
+
+    public CollectivityResponse findById(String id) {
+        CollectivityResponse collectivity = collectivityRepository.findById(id);
+
+        if (collectivity == null) {
+            throw BusinessException.collectivityNotFound(id);
+        }
+
+        return collectivity;
+    }
 }
