@@ -4,6 +4,7 @@ import com.exam.federation.Exception.BusinessException;
 import com.exam.federation.dto.*;
 
 import com.exam.federation.entity.CreateCollectivityStructure;
+import com.exam.federation.entity.MembershipFee;
 import com.exam.federation.repository.CollectivityRepository;
 import com.exam.federation.repository.CollectivityTransactionRepository;
 import com.exam.federation.repository.MemberRepository;
@@ -126,5 +127,15 @@ public class CollectivityService {
             throw BusinessException.collectivityNotFound(id);
         }
         return transactionRepository.findByCollectivityIdAndDateRange(id, from, to);
+    }
+
+    public CollectivityResponse findById(String id) {
+        CollectivityResponse collectivity = collectivityRepository.findById(id);
+
+        if (collectivity == null) {
+            throw BusinessException.collectivityNotFound(id);
+        }
+
+        return collectivity;
     }
 }

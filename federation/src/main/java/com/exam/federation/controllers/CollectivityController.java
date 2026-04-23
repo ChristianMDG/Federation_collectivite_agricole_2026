@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -54,10 +55,10 @@ public class CollectivityController {
     }
 
     @PostMapping("/{id}/membershipFees")
-    public ResponseEntity<List<MembershipFee>> createMembershipFees(
+    public ResponseEntity<?> createMembershipFees(
             @PathVariable String id,
             @RequestBody List<CreateMembershipFee> requests) {
-        List<MembershipFee> responses = collectivityService.createMembershipFees(id, requests);
+        List<?> responses = collectivityService.createMembershipFees(id, requests);
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
 
@@ -67,5 +68,20 @@ public class CollectivityController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok(collectivityService.getTransactions(id, from, to));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCollectivityById(@PathVariable String id) {
+        try {
+            CollectivityResponse response = collectivityService.findById(id);
+            return ResponseEntity.ok(response);
+
+        } catch (BusinessException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of(
+                            "status", e.getStatusCode(),
+                            "message", e.getMessage()
+                    ));
+        }
     }
 }

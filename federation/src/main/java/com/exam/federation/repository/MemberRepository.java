@@ -213,4 +213,21 @@ public class MemberRepository {
         }
         return null;
     }
+
+    // Dans MemberRepository.java
+    public String findCollectivityIdByMemberId(String memberId) {
+        String sql = "SELECT collectivity_id FROM member WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("collectivity_id");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
 }
