@@ -3,6 +3,9 @@ create type member_occupation_type as enum ('JUNIOR', 'SENIOR', 'SECRETARY', 'TR
 CREATE TYPE frequency_type AS ENUM ('WEEKLY', 'MONTHLY', 'ANNUALLY', 'PUNCTUALLY');
 CREATE TYPE activity_status_type AS ENUM ('ACTIVE', 'INACTIVE');
 CREATE TYPE payment_mode_type AS ENUM ('CASH', 'MOBILE_BANKING', 'BANK_TRANSFER');
+CREATE TYPE mobile_banking_service_type AS ENUM ('AIRTEL_MONEY', 'MVOLA', 'ORANGE_MONEY');
+CREATE TYPE bank_type AS ENUM ('BRED', 'MCB', 'BMOI', 'BOA', 'BGFI', 'AFG', 'ACCES_BAQUE', 'BAOBAB', 'SIPEM');
+
 create table IF NOT EXISTS member
 (
     id                    varchar primary key,
@@ -80,28 +83,66 @@ CREATE TABLE IF NOT EXISTS collectivity_transaction
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS collectivity_transaction
+CREATE TABLE collectivity_transaction
 (
-    id                VARCHAR(255) PRIMARY KEY,
-    collectivity_id   VARCHAR(255) REFERENCES collectivity (id),
-    member_id         VARCHAR(255) REFERENCES member (id),
-    membership_fee_id VARCHAR(255) REFERENCES membership_fee (id),
-    amount            DECIMAL(15, 2) NOT NULL,
-    payment_mode      payment_mode_type NOT NULL,
-    transaction_date  DATE           NOT NULL,
-    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id                  VARCHAR(255) PRIMARY KEY   DEFAULT 'tr_' || nextval('transaction_id_seq'),
+    collectivity_id     VARCHAR(255) REFERENCES collectivity (id),
+    member_id           VARCHAR(255) REFERENCES member (id),
+    membership_fee_id   VARCHAR(255) REFERENCES membership_fee (id),
+    account_credited_id VARCHAR(255) REFERENCES financial_account (id),
+    amount              DECIMAL(15, 2)    NOT NULL,
+    payment_mode        payment_mode_type NOT NULL,
+    creation_date       DATE              NOT NULL DEFAULT CURRENT_DATE,
+    created_at          TIMESTAMP                  DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TABLE IF NOT EXISTS member_payment
+CREATE TABLE member_payment
 (
-    id                VARCHAR(255) PRIMARY KEY   DEFAULT 'mp_' || nextval('member_payment_id_seq'),
-    member_id         VARCHAR(255)      NOT NULL,
-    membership_fee_id VARCHAR(255),
-    amount            DECIMAL(15, 2)    NOT NULL CHECK (amount > 0),
-    payment_mode      payment_mode_type NOT NULL,
-    payment_date      DATE              NOT NULL DEFAULT CURRENT_DATE,
-    created_at        TIMESTAMP                  DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_member_payment_member FOREIGN KEY (member_id) REFERENCES member (id) ON DELETE CASCADE,
-    CONSTRAINT fk_member_payment_fee FOREIGN KEY (membership_fee_id) REFERENCES membership_fee (id) ON DELETE SET NULL
+    id                  VARCHAR(255) PRIMARY KEY   DEFAULT 'mp_' || nextval('member_payment_id_seq'),
+    member_id           VARCHAR(255) REFERENCES member (id),
+    membership_fee_id   VARCHAR(255) REFERENCES membership_fee (id),
+    account_credited_id VARCHAR(255) REFERENCES financial_account (id),
+    amount              INTEGER           NOT NULL,
+    payment_mode        payment_mode_type NOT NULL,
+    creation_date       DATE              NOT NULL DEFAULT CURRENT_DATE,
+    created_at          TIMESTAMP                  DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE financial_account
+(
+    id           VARCHAR(255) PRIMARY KEY,
+    account_type VARCHAR(50) NOT NULL,
+    balance      DECIMAL(15, 2) DEFAULT 0,
+    created_at   TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP      DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE cash_account
+(
+    id VARCHAR(255) PRIMARY KEY REFERENCES financial_account (id)
+);
+
+CREATE TABLE mobile_banking_account
+(
+    id                     VARCHAR(255) PRIMARY KEY REFERENCES financial_account (id),
+    holder_name            VARCHAR(255)                NOT NULL,
+    mobile_banking_service mobile_banking_service_type NOT NULL,
+    mobile_number          VARCHAR(20)                 NOT NULL
+);
+CREATE TABLE bank_account
+(
+    id                  VARCHAR(255) PRIMARY KEY REFERENCES financial_account (id),
+    holder_name         VARCHAR(255) NOT NULL,
+    bank_name           bank_type    NOT NULL,
+    bank_code           VARCHAR(10)  NOT NULL,
+    bank_branch_code    VARCHAR(10)  NOT NULL,
+    bank_account_number VARCHAR(20)  NOT NULL,
+    bank_account_key    VARCHAR(10)  NOT NULL
+);
+
+CREATE TABLE collectivity_financial_account
+(
+    collectivity_id      VARCHAR(255) REFERENCES collectivity (id),
+    financial_account_id VARCHAR(255) REFERENCES financial_account (id),
+    PRIMARY KEY (collectivity_id, financial_account_id)
 );
 
 CREATE SEQUENCE IF NOT EXISTS member_id_seq START 1000;
@@ -109,4 +150,4 @@ CREATE SEQUENCE IF NOT EXISTS collectivity_id_seq start 2000;
 CREATE SEQUENCE IF NOT EXISTS membership_fee_id_seq START 3000;
 CREATE SEQUENCE IF NOT EXISTS transaction_id_seq START 1000;
 CREATE SEQUENCE IF NOT EXISTS member_payment_id_seq START 1000;
-
+CREATE SEQUENCE IF NOT EXISTS financial_account_id_seq START 1000;
