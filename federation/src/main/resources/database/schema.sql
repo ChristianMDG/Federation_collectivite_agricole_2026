@@ -198,7 +198,17 @@ CREATE TABLE member_payment
     creation_date       DATE              NOT NULL DEFAULT CURRENT_DATE,
     created_at          TIMESTAMP                  DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE IF NOT EXISTS collectivity_financial_account
+(
+    collectivity_id      VARCHAR(255) REFERENCES collectivity (id) ON DELETE CASCADE,
+    financial_account_id VARCHAR(255) REFERENCES financial_account (id) ON DELETE CASCADE,
+    PRIMARY KEY (collectivity_id, financial_account_id)
+);
 
+INSERT INTO collectivity_financial_account (collectivity_id, financial_account_id)
+VALUES ('col_2000', 'acc_cash_001'),
+       ('col_2000', 'acc_mvola_001'),
+       ('col_2000', 'acc_bank_001');
 -- =====================================================
 -- 17. Indexes pour performance
 -- =====================================================
