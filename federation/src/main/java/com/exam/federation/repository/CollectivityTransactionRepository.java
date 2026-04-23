@@ -26,7 +26,6 @@ public class CollectivityTransactionRepository {
         this.memberRepository = memberRepository;
         this.financialAccountRepository = financialAccountRepository;
     }
-
     public List<CollectivityTransaction> findByCollectivityIdAndDateRange(String collectivityId, LocalDate from, LocalDate to) {
         List<CollectivityTransaction> transactions = new ArrayList<>();
         String sql = """
