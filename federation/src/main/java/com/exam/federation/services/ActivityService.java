@@ -52,4 +52,12 @@ public class ActivityService {
 
         return activityRepository.saveAll(collectivityId, requests);
     }
+
+    public List<CollectivityActivity> getActivities(String collectivityId) {
+        if (collectivityRepository.findById(collectivityId) == null) {
+            throw new BusinessException(404, "Collectivity not found: " + collectivityId);
+        }
+
+        return activityRepository.findByCollectivityId(collectivityId);
+    }
 }
