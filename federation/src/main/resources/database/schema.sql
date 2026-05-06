@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS collectivity_members CASCADE;
 DROP TABLE IF EXISTS member_referees CASCADE;
 DROP TABLE IF EXISTS collectivity CASCADE;
 DROP TABLE IF EXISTS member CASCADE;
+DROP TABLE IF EXISTS activity CASCADE ;
 
 DROP SEQUENCE IF EXISTS member_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS collectivity_id_seq CASCADE;
@@ -20,6 +21,7 @@ DROP SEQUENCE IF EXISTS membership_fee_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS transaction_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS member_payment_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS financial_account_id_seq CASCADE;
+DROP SEQUENCE IF EXISTS activity_id_seq cascade ;
 
 
 CREATE TYPE gender_type AS ENUM ('MALE', 'FEMALE');
@@ -37,6 +39,8 @@ CREATE SEQUENCE membership_fee_id_seq START 3000;
 CREATE SEQUENCE transaction_id_seq START 1000;
 CREATE SEQUENCE member_payment_id_seq START 1000;
 CREATE SEQUENCE financial_account_id_seq START 1000;
+CREATE SEQUENCE IF NOT EXISTS activity_id_seq START 1000;
+
 
 
 CREATE TABLE member
@@ -50,12 +54,16 @@ CREATE TABLE member
     profession            VARCHAR(255),
     phone_number          INT,
     email                 VARCHAR(255),
-    registration_date     date default current_date,
+    registration_date     date                default current_date,
     occupation            member_occupation_type,
     registration_fee_paid BOOLEAN             DEFAULT FALSE,
     membership_dues_paid  BOOLEAN             DEFAULT FALSE,
     collectivity_id       VARCHAR
 );
+
+ALTER TABLE member
+    ALTER COLUMN registration_date SET DEFAULT CURRENT_DATE;
+
 CREATE TABLE member_referees
 (
     member_id  VARCHAR REFERENCES member (id) ON DELETE CASCADE,
@@ -66,7 +74,7 @@ CREATE TABLE member_referees
 
 CREATE TABLE collectivity
 (
-    id               VARCHAR PRIMARY KEY DEFAULT 'col_' || nextval('collectivity_id_seq'),
+    id                VARCHAR PRIMARY KEY DEFAULT 'col_' || nextval('collectivity_id_seq'),
     number            VARCHAR(50) UNIQUE,
     name              VARCHAR(255) UNIQUE,
     location          VARCHAR(255),
@@ -168,6 +176,27 @@ CREATE TABLE member_payment
     created_at          TIMESTAMP                  DEFAULT CURRENT_TIMESTAMP
 );
 
+
+
+CREATE TABLE activity
+(
+    id                          VARCHAR PRIMARY KEY DEFAULT 'act_' || nextval('activity_id_seq'),
+    collectivity_id             VARCHAR REFERENCES collectivity (id) ON DELETE CASCADE,
+    label                       VARCHAR(255) NOT NULL,
+    activity_type               VARCHAR(50)  NOT NULL CHECK (activity_type IN ('MEETING', 'TRAINING', 'OTHER')),
+    member_occupation_concerned VARCHAR(255),
+    recurrence_week_ordinal     INT CHECK (recurrence_week_ordinal BETWEEN 1 AND 5),
+    recurrence_day_of_week      VARCHAR(2) CHECK (recurrence_day_of_week IN ('MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU')),
+    executive_date              DATE,
+    created_at                  TIMESTAMP           DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_recurrence_or_date CHECK (
+        (recurrence_week_ordinal IS NOT NULL AND recurrence_day_of_week IS NOT NULL AND executive_date IS NULL) OR
+        (recurrence_week_ordinal IS NULL AND recurrence_day_of_week IS NULL AND executive_date IS NOT NULL)
+        )
+);
+
+-- Index
+CREATE INDEX idx_activity_collectivity ON activity (collectivity_id);
 CREATE INDEX idx_member_email ON member (email);
 CREATE INDEX idx_member_collectivity_id ON member (collectivity_id);
 CREATE INDEX idx_collectivity_members_collectivity ON collectivity_members (collectivity_id);
@@ -176,11 +205,4 @@ CREATE INDEX idx_member_payment_member ON member_payment (member_id);
 CREATE INDEX idx_member_payment_date ON member_payment (creation_date);
 CREATE INDEX idx_transaction_collectivity ON collectivity_transaction (collectivity_id);
 CREATE INDEX idx_transaction_date ON collectivity_transaction (creation_date);
-
-
-ALTER TABLE member ALTER COLUMN registration_date SET DEFAULT CURRENT_DATE;
-
--- Vérifier les cotisations pour col-1
-SELECT * FROM membership_fee WHERE collectivity_id = 'col-1';
-
-SELECT * FROM membership_fee WHERE collectivity_id = 'col-1';
+CREATE INDEX idx_activity_collectivity ON activity (collectivity_id);
