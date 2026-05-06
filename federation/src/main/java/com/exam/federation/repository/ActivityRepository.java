@@ -147,4 +147,21 @@ public class ActivityRepository {
 
         return activities;
     }
+
+    public boolean existsByIdAndCollectivityId(String activityId, String collectivityId) {
+        String sql = "SELECT COUNT(id) FROM activity WHERE id = ? AND collectivity_id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, activityId);
+            ps.setString(2, collectivityId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking activity existence: " + e.getMessage(), e);
+        }
+        return false;
+    }
 }

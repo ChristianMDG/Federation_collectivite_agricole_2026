@@ -375,8 +375,73 @@ paths:
                     $ref: '#/components/schemas/ActivityMemberAttendance'
           404:
             description: Either collectivity not found or activity not found
-
-
+  '/collectivities/{id}/activities/{activityId}/attendance':
+    post:
+      summary: Confirm members attendance to an existing collectivity activity
+      description: |
+        Note that a member attendance status (MISSING or ATTENDED) can not be updated once set.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Collectivity ID
+        - in: path
+          name: activityId
+          schema:
+            type: string
+          required: true
+          description: Activity ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateActivityMemberAttendance'
+      responses:
+        201:
+          description: List of activity member attendance created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityMemberAttendance'
+        400:
+          description: Either malformed provided data through request body or already confirmed attendance for any of provided member
+        404:
+          description: Either collectivity not found or activity not found
+    get:
+      summary: Get members attendance to an existing collectivity activity
+      description: |
+        Note that return attendance must include ATTENDED or MISSING members.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Collectivity ID
+        - in: path
+          name: activityId
+          schema:
+            type: string
+          required: true
+          description: Activity ID
+      responses:
+        200:
+          description: List of activity member attendance
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityMemberAttendance'
+        404:
+          description: Either collectivity not found or activity not found
 components:
   schemas:
     CreateCollectivity:
