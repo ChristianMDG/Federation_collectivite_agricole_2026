@@ -55,7 +55,7 @@ CREATE TABLE member
     membership_dues_paid  BOOLEAN             DEFAULT FALSE,
     collectivity_id       VARCHAR
 );
-
+alter table member add column registration_date date default current_date;
 
 CREATE TABLE member_referees
 (
