@@ -9,7 +9,7 @@ info:
     - v0.0.3 (2026-04-23) : New features about membership fees, collectivities transactions and its financial accounts, and members payments.
   version: 0.0.1
 servers:
-  - url: 'https://localhost:8080'
+  - url: 'http://localhost:8080'
 paths:
   '/collectivities':
     post:
@@ -199,6 +199,87 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MemberPayment'
+    '/collectivities/{id}':
+      get:
+        summary: Collectivity by collectivityId
+        parameters:
+          - in: path
+            name: id
+            schema:
+              type: string
+            required: true
+        responses:
+          200:
+            description: Retrieve collectivity by collectivityId with list of members
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CollectivityResponse'
+          404:
+            description: Collectivity not found.
+
+  '/collectivites/{id}/statistics':
+    get:
+      summary: Get local statistics for a collectivity
+      description: |
+        Get statistics for a collectivity between a date interval.
+        Actually, statistics contain only earned amount from each member and potential unpaid amount.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date
+          required: true
+      responses:
+        200:
+          description: Collectivity local statistics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectivityLocalStatistics'
+
+  '/collectivities/statistics':
+    get:
+      summary: Get collectivities overall statistics
+      description: |
+        Get collectivities global statistics between a date interval.
+        Actually, statistics contain only overall percentage of members who are current with their dues (membership fees) and number of new members.
+      parameters:
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date
+          required: true
+      responses:
+        200:
+          description: Collectivity overall statistics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectivityOverallStatistics'
 
 components:
   schemas:
@@ -251,6 +332,23 @@ components:
         - $ref: '#/components/schemas/CollectivityInformation'
       properties:
         id:
+          type: string
+        location:
+          type: string
+        structure:
+          $ref: '#/components/schemas/CollectivityStructure'
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+    CollectivityResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        number:
           type: string
         location:
           type: string
@@ -467,3 +565,35 @@ components:
         - CASH
         - MOBILE_BANKING
         - BANK_TRANSFER
+    CollectivityLocalStatistics:
+      type: object
+      properties:
+        memberDescription:
+          $ref: '#/components/schemas/MemberDescription'
+        earnedAmount:
+          type: number
+        unpaidAmount:
+          type: number
+    CollectivityOverallStatistics:
+      type: object
+      properties:
+        collectivityInformation:
+          $ref: '#/components/schemas/CollectivityInformation'
+        newMembersNumber:
+          type: integer
+        overallMemberCurrentDuePercentage:
+          type: number
+    MemberDescription:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        occupation:
+          type: string
+

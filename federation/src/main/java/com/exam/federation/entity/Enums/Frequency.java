@@ -1,6 +1,6 @@
 package com.exam.federation.entity.Enums;
 
 public enum Frequency {
-    MONTHLY,
-    YEARLY
+    WEEKLY, MONTHLY, ANNUALLY, PUNCTUALLY
+
 }

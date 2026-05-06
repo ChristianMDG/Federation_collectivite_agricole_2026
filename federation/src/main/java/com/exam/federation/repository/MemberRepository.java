@@ -20,18 +20,18 @@ public class MemberRepository {
 
     public MemberResponse save(CreateMember request) {
         String sql = """
-            INSERT INTO member (
-                id, firstname, lastname, birthday, gender, address,
-                profession, phone_number, email, occupation,
-                registration_fee_paid, membership_dues_paid, collectivity_id
-            )
-            VALUES (
-                'mem_' || nextval('member_id_seq'),
-                ?, ?, ?::DATE, ?::gender_type, ?, ?, ?, ?, ?::member_occupation_type, ?, ?, ?
-            )
-            RETURNING id, firstname, lastname, birthday, gender,
-                      address, profession, phone_number, email, occupation
-        """;
+                INSERT INTO member (
+                    id, firstname, lastname, birthday, gender, address,
+                    profession, phone_number, email, occupation,
+                    registration_fee_paid, membership_dues_paid, collectivity_id, registration_date
+                )
+                VALUES (
+                    'mem_' || nextval('member_id_seq'),
+                    ?, ?, ?::DATE, ?::gender_type, ?, ?, ?, ?, ?::member_occupation_type, ?, ?, ?, CURRENT_DATE
+                )
+                RETURNING id, firstname, lastname, birthday, gender,
+                          address, profession, phone_number, email, occupation
+            """;
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -210,6 +210,23 @@ public class MemberRepository {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Database error: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
+    // Dans MemberRepository.java
+    public String findCollectivityIdByMemberId(String memberId) {
+        String sql = "SELECT collectivity_id FROM member WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("collectivity_id");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return null;
     }

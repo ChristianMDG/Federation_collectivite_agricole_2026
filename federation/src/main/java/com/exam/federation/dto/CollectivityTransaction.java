@@ -9,10 +9,11 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberPayment {
+public class CollectivityTransaction {
     private String id;
-    private Integer amount;
+    private LocalDate creationDate;
+    private Double amount;
     private PaymentMode paymentMode;
     private FinancialAccount accountCredited;
-    private LocalDate creationDate;
+    private MemberResponse memberDebited;
 }
