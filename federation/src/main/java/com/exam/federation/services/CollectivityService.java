@@ -4,10 +4,8 @@ import com.exam.federation.Exception.BusinessException;
 import com.exam.federation.dto.*;
 
 import com.exam.federation.entity.CreateCollectivityStructure;
-import com.exam.federation.repository.CollectivityRepository;
-import com.exam.federation.repository.CollectivityTransactionRepository;
-import com.exam.federation.repository.MemberRepository;
-import com.exam.federation.repository.MembershipFeeRepository;
+import com.exam.federation.entity.MembershipFee;
+import com.exam.federation.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +21,8 @@ public class CollectivityService {
     private final MemberRepository memberRepository;
     private final MembershipFeeRepository membershipFeeRepository;
     private final CollectivityTransactionRepository transactionRepository;
+    private final FinancialAccountRepository financialAccountRepository;
+
 
     public List<CollectivityResponse> saveAll(List<CreateCollectivityRequest> requests) {
         List<CollectivityResponse> responses = new ArrayList<>();
@@ -126,5 +126,24 @@ public class CollectivityService {
             throw BusinessException.collectivityNotFound(id);
         }
         return transactionRepository.findByCollectivityIdAndDateRange(id, from, to);
+    }
+
+
+    public List<FinancialAccount> getFinancialAccounts(String collectivityId) {
+        if (collectivityRepository.findById(collectivityId) == null) {
+            throw BusinessException.collectivityNotFound(collectivityId);
+        }
+
+        return financialAccountRepository.findByCollectivityId(collectivityId);
+    }
+    public CollectivityResponse findById(String id) {
+        CollectivityResponse collectivity = collectivityRepository.findById(id);
+
+        if (collectivity == null) {
+            throw BusinessException.collectivityNotFound(id);
+        }
+
+        return collectivity;
+
     }
 }

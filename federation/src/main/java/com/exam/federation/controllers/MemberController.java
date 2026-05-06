@@ -2,6 +2,8 @@ package com.exam.federation.controllers;
 
 import com.exam.federation.Exception.BusinessException;
 import com.exam.federation.dto.CreateMember;
+import com.exam.federation.dto.CreateMemberPayment;
+import com.exam.federation.dto.MemberPayment;
 import com.exam.federation.dto.MemberResponse;
 import com.exam.federation.services.MemberService;
 import org.springframework.http.HttpStatus;
@@ -34,5 +36,13 @@ public class MemberController {
             error.put("message", e.getMessage());
             return ResponseEntity.status(e.getStatusCode()).body(error);
         }
+    }
+
+    @PostMapping("/{id}/payments")
+    public ResponseEntity<List<MemberPayment>> createPayments(
+            @PathVariable String id,
+            @RequestBody List<CreateMemberPayment> requests) {
+        List<MemberPayment> responses = memberService.createPayments(id, requests);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
 }

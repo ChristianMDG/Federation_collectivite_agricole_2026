@@ -96,4 +96,16 @@ public class BusinessException extends RuntimeException {
     public static BusinessException missingDateParameter() {
         return new BusinessException(400, "Both 'from' and 'to' date parameters are required");
     }
+
+    public static BusinessException membershipFeeNotFound(String id) {
+        return new BusinessException(404, "Membership fee not found: " + id);
+    }
+
+    public static BusinessException financialAccountNotFound(String id) {
+        return new BusinessException(404, "Financial account not found: " + id);
+    }
+
+    public static BusinessException invalidPaymentMode() {
+        return new BusinessException(400, "Invalid payment mode. Allowed: CASH, MOBILE_BANKING, BANK_TRANSFER");
+    }
 }

@@ -4,16 +4,13 @@ import com.exam.federation.entity.Enums.PaymentMode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CollectivityTransaction {
-    private String id;
-    private LocalDate creationDate;
-    private Double amount;
+public class CreateMemberPayment {
+    private Integer amount;
+    private String membershipFeeIdentifier;
+    private String accountCreditedIdentifier;
     private PaymentMode paymentMode;
-    private FinancialAccount accountCredited;
-    private MemberResponse memberDebited;
 }
