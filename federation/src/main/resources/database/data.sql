@@ -1,9 +1,9 @@
 
-INSERT INTO collectivity (id, number, name, location, speciality)
+INSERT INTO collectivity (id, number, name, location)
 VALUES
-    ('col-1', '1', 'Mpanorina',      'Ambatondrazaka', 'Riziculture'),
-    ('col-2', '2', 'Dobo voalohany', 'Ambatondrazaka', 'Pisciculture'),
-    ('col-3', '3', 'Tantely mamy',   'Brickaville',    'Apiculture');
+    ('col-1', '1', 'Mpanorina',      'Ambatondrazaka'),
+    ('col-2', '2', 'Dobo voalohany', 'Ambatondrazaka'),
+    ('col-3', '3', 'Tantely mamy',   'Brickaville');
 
 
 INSERT INTO member (id, lastname, firstname, birthday, gender, address, profession, phone_number, email, occupation, collectivity_id)
