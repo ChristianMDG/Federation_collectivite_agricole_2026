@@ -21,6 +21,14 @@ DROP SEQUENCE IF EXISTS transaction_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS member_payment_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS financial_account_id_seq CASCADE;
 
+DROP TYPE gender_type;
+DROP TYPE member_occupation_type;
+DROP TYPE frequency_type;
+DROP TYPE activity_status_type;
+DROP TYPE payment_mode_type;
+DROP TYPE mobile_banking_service_type;
+DROP TYPE bank_type;
+
 
 CREATE TYPE gender_type AS ENUM ('MALE', 'FEMALE');
 CREATE TYPE member_occupation_type AS ENUM ('JUNIOR', 'SENIOR', 'SECRETARY', 'TREASURER', 'VICE_PRESIDENT', 'PRESIDENT');
