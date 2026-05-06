@@ -56,8 +56,6 @@ CREATE TABLE member
     membership_dues_paid  BOOLEAN             DEFAULT FALSE,
     collectivity_id       VARCHAR
 );
-alter table member add column registration_date date default current_date;
-
 CREATE TABLE member_referees
 (
     member_id  VARCHAR REFERENCES member (id) ON DELETE CASCADE,
@@ -169,14 +167,6 @@ CREATE TABLE member_payment
     creation_date       DATE              NOT NULL DEFAULT CURRENT_DATE,
     created_at          TIMESTAMP                  DEFAULT CURRENT_TIMESTAMP
 );
-drop table collectivity_financial_account;
-CREATE TABLE IF NOT EXISTS collectivity_financial_account
-(
-    collectivity_id      VARCHAR(255) REFERENCES collectivity (id) ON DELETE CASCADE,
-    financial_account_id VARCHAR(255) REFERENCES financial_account (id) ON DELETE CASCADE,
-    PRIMARY KEY (collectivity_id, financial_account_id)
-);
-
 
 CREATE INDEX idx_member_email ON member (email);
 CREATE INDEX idx_member_collectivity_id ON member (collectivity_id);
@@ -186,3 +176,11 @@ CREATE INDEX idx_member_payment_member ON member_payment (member_id);
 CREATE INDEX idx_member_payment_date ON member_payment (creation_date);
 CREATE INDEX idx_transaction_collectivity ON collectivity_transaction (collectivity_id);
 CREATE INDEX idx_transaction_date ON collectivity_transaction (creation_date);
+
+
+ALTER TABLE member ALTER COLUMN registration_date SET DEFAULT CURRENT_DATE;
+
+-- Vérifier les cotisations pour col-1
+SELECT * FROM membership_fee WHERE collectivity_id = 'col-1';
+
+SELECT * FROM membership_fee WHERE collectivity_id = 'col-1';
