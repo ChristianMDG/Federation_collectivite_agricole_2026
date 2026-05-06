@@ -744,6 +744,9 @@ components:
           type: integer
         overallMemberCurrentDuePercentage:
           type: number
+        overallMemberAssiduityPercentage:
+          type: number
+          description: Taux d'assiduité global des membres de la collectivité sur la période donnée
     MemberDescription:
       type: object
       properties:
