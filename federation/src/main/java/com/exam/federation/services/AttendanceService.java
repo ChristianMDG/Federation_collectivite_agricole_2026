@@ -43,4 +43,17 @@ public class AttendanceService {
 
         return attendanceRepository.saveAll(activityId, requests);
     }
+
+    public List<ActivityMemberAttendance> getAttendance(String collectivityId, String activityId) {
+
+        if (collectivityRepository.findById(collectivityId) == null) {
+            throw new BusinessException(404, "Collectivity not found: " + collectivityId);
+        }
+
+        if (!attendanceRepository.existsById(activityId, collectivityId)) {
+            throw new BusinessException(404, "Activity not found: " + activityId);
+        }
+
+        return attendanceRepository.findByActivityId(activityId);
+    }
 }

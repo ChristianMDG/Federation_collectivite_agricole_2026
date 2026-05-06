@@ -94,4 +94,65 @@ public class AttendanceRepository {
         desc.setOccupation(((com.exam.federation.dto.MemberResponse) member).getOccupation().name());
         return desc;
     }
+
+    public List<ActivityMemberAttendance> findByActivityId(String activityId) {
+        List<ActivityMemberAttendance> attendances = new ArrayList<>();
+        String sql = """
+        SELECT 
+            a.id,
+            a.member_id,
+            a.attendance_status,
+            m.firstname,
+            m.lastname,
+            m.email,
+            m.occupation
+        FROM member_attendance a
+        JOIN member m ON m.id = a.member_id
+        WHERE a.activity_id = ?
+        ORDER BY m.firstname, m.lastname
+    """;
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, activityId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                MemberDescription memberDesc = new MemberDescription();
+                memberDesc.setId(rs.getString("member_id"));
+                memberDesc.setFirstName(rs.getString("firstname"));
+                memberDesc.setLastName(rs.getString("lastname"));
+                memberDesc.setEmail(rs.getString("email"));
+                memberDesc.setOccupation(rs.getString("occupation"));
+
+                ActivityMemberAttendance attendance = new ActivityMemberAttendance();
+                attendance.setId(rs.getString("id"));
+                attendance.setMemberDescription(memberDesc);
+                attendance.setAttendanceStatus(AttendanceStatus.valueOf(rs.getString("attendance_status")));
+
+                attendances.add(attendance);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la récupération de l'assiduité: " + e.getMessage(), e);
+        }
+        return attendances;
+    }
+
+    public boolean existsById(String activityId, String collectivityId) {
+        String sql = "SELECT COUNT(id) FROM activity WHERE id = ? AND collectivity_id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, activityId);
+            ps.setString(2, collectivityId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
 }
