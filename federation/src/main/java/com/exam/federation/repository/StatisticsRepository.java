@@ -22,6 +22,10 @@ public class StatisticsRepository {
     public List<CollectivityLocalStatistics> getLocalStatistics(String collectivityId, LocalDate from, LocalDate to) {
         List<CollectivityLocalStatistics> statistics = new ArrayList<>();
 
+        ActiveFee activeFee = getActiveFee(collectivityId, to);
+        double activeFeeAmount = activeFee != null ? activeFee.amount : 0;
+        String activeFeeId = activeFee != null ? activeFee.id : null;
+
         String sql = """
             SELECT 
                 m.id,
@@ -31,18 +35,11 @@ public class StatisticsRepository {
                 m.occupation,
                 COALESCE(SUM(mp.amount), 0) as earned_amount,
                 COALESCE((
-                    SELECT SUM(mf.amount)
-                    FROM membership_fee mf
-                    WHERE mf.collectivity_id = ?
-                      AND mf.status = 'ACTIVE'
-                      AND mf.eligible_from <= ?
-                      AND NOT EXISTS (
-                          SELECT 1 
-                          FROM member_payment mp2 
-                          WHERE mp2.member_id = m.id 
-                            AND mp2.membership_fee_id = mf.id
-                      )
-                ), 0) as unpaid_amount
+                    SELECT SUM(mp2.amount)
+                    FROM member_payment mp2
+                    WHERE mp2.member_id = m.id
+                      AND mp2.membership_fee_id = ?
+                ), 0) as paid_for_active_fee
             FROM member m
             LEFT JOIN member_payment mp 
                 ON mp.member_id = m.id 
@@ -55,15 +52,20 @@ public class StatisticsRepository {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, collectivityId);
-            ps.setDate(2, Date.valueOf(to));
-            ps.setDate(3, Date.valueOf(from));
-            ps.setDate(4, Date.valueOf(to));
-            ps.setString(5, collectivityId);
+            ps.setString(1, activeFeeId);
+            ps.setDate(2, Date.valueOf(from));
+            ps.setDate(3, Date.valueOf(to));
+            ps.setString(4, collectivityId);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+                double earned = rs.getDouble("earned_amount");
+                double paidForActiveFee = rs.getDouble("paid_for_active_fee");
+
+                boolean isUpToDate = paidForActiveFee >= activeFeeAmount;
+                double unpaid = isUpToDate ? 0 : (activeFeeAmount - paidForActiveFee);
+
                 MemberDescription memberDesc = new MemberDescription();
                 memberDesc.setId(rs.getString("id"));
                 memberDesc.setFirstName(rs.getString("firstname"));
@@ -73,8 +75,8 @@ public class StatisticsRepository {
 
                 CollectivityLocalStatistics stat = new CollectivityLocalStatistics();
                 stat.setMemberDescription(memberDesc);
-                stat.setEarnedAmount(rs.getDouble("earned_amount"));
-                stat.setUnpaidAmount(rs.getDouble("unpaid_amount"));
+                stat.setEarnedAmount(earned);
+                stat.setUnpaidAmount(unpaid);
 
                 statistics.add(stat);
             }
@@ -84,5 +86,34 @@ public class StatisticsRepository {
         }
 
         return statistics;
+    }
+
+    private ActiveFee getActiveFee(String collectivityId, LocalDate to) {
+        String sql = """
+            SELECT id, amount
+            FROM membership_fee
+            WHERE collectivity_id = ? AND status = 'ACTIVE'
+            LIMIT 1
+        """;
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, collectivityId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                ActiveFee fee = new ActiveFee();
+                fee.id = rs.getString("id");
+                fee.amount = rs.getDouble("amount");
+                return fee;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    private static class ActiveFee {
+        String id;
+        double amount;
     }
 }
