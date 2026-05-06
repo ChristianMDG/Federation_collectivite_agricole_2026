@@ -5,7 +5,11 @@ import com.exam.federation.dto.CollectivityLocalStatistics;
 import com.exam.federation.dto.MemberDescription;
 import org.springframework.stereotype.Repository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +17,7 @@ import java.util.List;
 @Repository
 public class StatisticsRepository {
 
-    private final DataSource dataSource;
+    private DataSource dataSource;
 
     public StatisticsRepository(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -23,8 +27,13 @@ public class StatisticsRepository {
         List<CollectivityLocalStatistics> statistics = new ArrayList<>();
 
         ActiveFee activeFee = getActiveFee(collectivityId, to);
-        double activeFeeAmount = activeFee != null ? activeFee.amount : 0;
-        String activeFeeId = activeFee != null ? activeFee.id : null;
+        double activeFeeAmount = 0;
+        String activeFeeId = null;
+
+        if (activeFee != null) {
+            activeFeeAmount = activeFee.amount;
+            activeFeeId = activeFee.id;
+        }
 
         String sql = """
             SELECT 
@@ -33,18 +42,13 @@ public class StatisticsRepository {
                 m.lastname,
                 m.email,
                 m.occupation,
-                COALESCE(SUM(mp.amount), 0) as earned_amount,
-                COALESCE((
-                    SELECT SUM(mp2.amount)
-                    FROM member_payment mp2
-                    WHERE mp2.member_id = m.id
-                      AND mp2.membership_fee_id = ?
-                ), 0) as paid_for_active_fee
+                COALESCE(SUM(mp.amount), 0) as earned_amount
             FROM member m
+            INNER JOIN collectivity_members cm ON cm.member_id = m.id
             LEFT JOIN member_payment mp 
                 ON mp.member_id = m.id 
                 AND mp.creation_date BETWEEN ? AND ?
-            WHERE m.collectivity_id = ?
+            WHERE cm.collectivity_id = ?
             GROUP BY m.id, m.firstname, m.lastname, m.email, m.occupation
             ORDER BY m.firstname, m.lastname
         """;
@@ -52,26 +56,34 @@ public class StatisticsRepository {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, activeFeeId);
-            ps.setDate(2, Date.valueOf(from));
-            ps.setDate(3, Date.valueOf(to));
-            ps.setString(4, collectivityId);
+            ps.setDate(1, Date.valueOf(from));
+            ps.setDate(2, Date.valueOf(to));
+            ps.setString(3, collectivityId);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+                String memberId = rs.getString("id");
+                String firstname = rs.getString("firstname");
+                String lastname = rs.getString("lastname");
+                String email = rs.getString("email");
+                String occupation = rs.getString("occupation");
                 double earned = rs.getDouble("earned_amount");
-                double paidForActiveFee = rs.getDouble("paid_for_active_fee");
+
+                double paidForActiveFee = getPaidForActiveFee(conn, memberId, activeFeeId);
 
                 boolean isUpToDate = paidForActiveFee >= activeFeeAmount;
-                double unpaid = isUpToDate ? 0 : (activeFeeAmount - paidForActiveFee);
+                double unpaid = 0;
+                if (isUpToDate == false) {
+                    unpaid = activeFeeAmount - paidForActiveFee;
+                }
 
                 MemberDescription memberDesc = new MemberDescription();
-                memberDesc.setId(rs.getString("id"));
-                memberDesc.setFirstName(rs.getString("firstname"));
-                memberDesc.setLastName(rs.getString("lastname"));
-                memberDesc.setEmail(rs.getString("email"));
-                memberDesc.setOccupation(rs.getString("occupation"));
+                memberDesc.setId(memberId);
+                memberDesc.setFirstName(firstname);
+                memberDesc.setLastName(lastname);
+                memberDesc.setEmail(email);
+                memberDesc.setOccupation(occupation);
 
                 CollectivityLocalStatistics stat = new CollectivityLocalStatistics();
                 stat.setMemberDescription(memberDesc);
@@ -86,6 +98,26 @@ public class StatisticsRepository {
         }
 
         return statistics;
+    }
+
+    private double getPaidForActiveFee(Connection conn, String memberId, String activeFeeId) {
+        if (activeFeeId == null) {
+            return 0;
+        }
+
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM member_payment WHERE member_id = ? AND membership_fee_id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId);
+            ps.setString(2, activeFeeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors du calcul du paiement: " + e.getMessage(), e);
+        }
+        return 0;
     }
 
     private ActiveFee getActiveFee(String collectivityId, LocalDate to) {
@@ -107,12 +139,12 @@ public class StatisticsRepository {
                 return fee;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erreur lors de la récupération de la cotisation: " + e.getMessage(), e);
         }
         return null;
     }
 
-    private static class ActiveFee {
+    private class ActiveFee {
         String id;
         double amount;
     }

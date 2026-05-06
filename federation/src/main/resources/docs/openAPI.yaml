@@ -218,7 +218,7 @@ paths:
           404:
             description: Collectivity not found.
 
-  '/collectivites/{id}/statistics':
+  '/collectivities/{id}/statistics':
     get:
       summary: Get local statistics for a collectivity
       description: |
