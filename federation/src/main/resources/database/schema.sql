@@ -32,7 +32,7 @@ CREATE TYPE bank_type AS ENUM ('BRED', 'MCB', 'BMOI', 'BOA', 'BGFI', 'AFG', 'ACC
 
 
 CREATE SEQUENCE member_id_seq START 1000;
-CREATE SEQUENCE collectivity_id_seq START 2000;
+CREATE SEQUENCE collectivity_id_seq START 1000;
 CREATE SEQUENCE membership_fee_id_seq START 3000;
 CREATE SEQUENCE transaction_id_seq START 1000;
 CREATE SEQUENCE member_payment_id_seq START 1000;
@@ -49,7 +49,7 @@ CREATE TABLE member
     address               VARCHAR(255),
     profession            VARCHAR(255),
     phone_number          INT,
-    email                 VARCHAR(255) UNIQUE,
+    email                 VARCHAR(255) ,
     occupation            member_occupation_type,
     registration_fee_paid BOOLEAN             DEFAULT FALSE,
     membership_dues_paid  BOOLEAN             DEFAULT FALSE,
@@ -67,10 +67,11 @@ CREATE TABLE member_referees
 
 CREATE TABLE collectivity
 (
-    id                VARCHAR PRIMARY KEY DEFAULT 'col_' || nextval('collectivity_id_seq'),
+    id               VARCHAR PRIMARY KEY DEFAULT 'col_' || nextval('collectivity_id_seq'),
     number            VARCHAR(50) UNIQUE,
     name              VARCHAR(255) UNIQUE,
     location          VARCHAR(255),
+    speciality        VARCHAR(255),
     president_id      VARCHAR REFERENCES member (id),
     vice_president_id VARCHAR REFERENCES member (id),
     treasurer_id      VARCHAR REFERENCES member (id),
@@ -166,6 +167,13 @@ CREATE TABLE member_payment
     payment_mode        payment_mode_type NOT NULL,
     creation_date       DATE              NOT NULL DEFAULT CURRENT_DATE,
     created_at          TIMESTAMP                  DEFAULT CURRENT_TIMESTAMP
+);
+drop table collectivity_financial_account;
+CREATE TABLE IF NOT EXISTS collectivity_financial_account
+(
+    collectivity_id      VARCHAR(255) REFERENCES collectivity (id) ON DELETE CASCADE,
+    financial_account_id VARCHAR(255) REFERENCES financial_account (id) ON DELETE CASCADE,
+    PRIMARY KEY (collectivity_id, financial_account_id)
 );
 
 

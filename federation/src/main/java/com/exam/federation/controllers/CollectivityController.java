@@ -70,6 +70,12 @@ public class CollectivityController {
         return ResponseEntity.ok(collectivityService.getTransactions(id, from, to));
     }
 
+
+    @GetMapping("/{id}/financialAccounts")
+    public ResponseEntity<List<FinancialAccount>> getFinancialAccounts(@PathVariable String id) {
+        List<FinancialAccount> accounts = collectivityService.getFinancialAccounts(id);
+        return ResponseEntity.ok(accounts);
+    }
     @GetMapping("/{id}")
     public ResponseEntity<?> getCollectivityById(@PathVariable String id) {
         try {

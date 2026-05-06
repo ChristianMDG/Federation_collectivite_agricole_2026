@@ -136,10 +136,10 @@ public class FinancialAccountRepository {
                 account.setAmount(amount);
                 account.setHolderName(rs.getString("holder_name"));
                 account.setBankName(rs.getString("bank_name"));
-                account.setBankCode(rs.getInt("bank_code"));
-                account.setBankBranchCode(rs.getInt("bank_branch_code"));
-                account.setBankAccountNumber(rs.getInt("bank_account_number"));
-                account.setBankAccountKey(rs.getInt("bank_account_key"));
+                account.setBankCode(rs.getString("bank_code"));           // ✅ String
+                account.setBankBranchCode(rs.getString("bank_branch_code")); // ✅ String
+                account.setBankAccountNumber(rs.getString("bank_account_number")); // ✅ String
+                account.setBankAccountKey(rs.getString("bank_account_key"));     // ✅ String
                 return account;
             }
 
@@ -162,5 +162,37 @@ public class FinancialAccountRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<FinancialAccount> findByCollectivityId(String collectivityId) {
+        List<FinancialAccount> accounts = new ArrayList<>();
+
+        String sql = """
+            SELECT fa.id, fa.amount
+            FROM financial_account fa
+            JOIN collectivity_financial_account cfa ON cfa.financial_account_id = fa.id
+            WHERE cfa.collectivity_id = ?
+        """;
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, collectivityId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String accountId = rs.getString("id");
+                Integer amount = rs.getInt("amount");
+
+                FinancialAccount account = findById(accountId);
+                if (account != null) {
+                    accounts.add(account);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error getting financial accounts: " + e.getMessage(), e);
+        }
+        return accounts;
     }
 }
