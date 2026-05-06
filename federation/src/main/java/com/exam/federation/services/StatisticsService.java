@@ -26,13 +26,11 @@ public class StatisticsService {
         if (collectivityRepository.findById(collectivityId) == null) {
             throw BusinessException.collectivityNotFound(collectivityId);
         }
-
-        if (from == null || to == null) {
-            throw new IllegalArgumentException("Les paramètres 'from' et 'to' sont obligatoires");
+        if (from == null || to == null ) {
+            throw  BusinessException.missingParameters();
         }
-
         if (from.isAfter(to)) {
-            throw new IllegalArgumentException("La date 'from' doit être antérieure à la date 'to'");
+            throw BusinessException.parametersException();
         }
 
         return statisticsRepository.getLocalStatistics(collectivityId, from, to);
