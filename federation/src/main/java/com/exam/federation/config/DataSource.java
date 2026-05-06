@@ -18,8 +18,8 @@ public class DataSource {
     public Connection getConnection() {
         try {
             String jdbcURL = dotenv.get("JDBC_URL");
-            String user = dotenv.get("USERNAME");
-            String password = dotenv.get("PASSWORD");
+            String user = dotenv.get("DB_USER");
+            String password = dotenv.get("DB_PASSWORD");
             return DriverManager.getConnection(jdbcURL, user, password);
         } catch (SQLException e) {
             throw new RuntimeException(e);

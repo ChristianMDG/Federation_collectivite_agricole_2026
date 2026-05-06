@@ -19,10 +19,13 @@ import java.util.Map;
 @RequestMapping("/collectivities")
 public class CollectivityController {
 
-    private final CollectivityService collectivityService;
+    private CollectivityService collectivityService;
+    private CollectivityStatisticsService collectivityStatisticsService;
 
-    public CollectivityController(CollectivityService collectivityService) {
+    public CollectivityController(CollectivityService collectivityService,
+                                  CollectivityStatisticsService collectivityStatisticsService) {
         this.collectivityService = collectivityService;
+        this.collectivityStatisticsService = collectivityStatisticsService;
     }
 
     @PostMapping
@@ -92,8 +95,6 @@ public class CollectivityController {
         }
     }
 
-    private CollectivityStatisticsService collectivityStatisticsService;
-
     @GetMapping("/statistics")
     public ResponseEntity<?> getOverallStatistics(
             @RequestParam LocalDate from,
@@ -101,7 +102,7 @@ public class CollectivityController {
         try {
             return ResponseEntity.ok(collectivityStatisticsService.getOverallStatistics(from, to));
         } catch (BusinessException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getMessage()));
         }
     }
 }

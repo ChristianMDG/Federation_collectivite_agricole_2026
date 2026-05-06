@@ -9,7 +9,7 @@ info:
     - v0.0.3 (2026-04-23) : New features about membership fees, collectivities transactions and its financial accounts, and members payments.
   version: 0.0.1
 servers:
-  - url: 'https://localhost:8080'
+  - url: 'http://localhost:8080'
 paths:
   '/collectivities':
     post:
@@ -252,18 +252,13 @@ paths:
                 items:
                   $ref: '#/components/schemas/CollectivityLocalStatistics'
 
-  '/collectivites/statistics':
+  '/collectivities/statistics':
     get:
       summary: Get collectivities overall statistics
       description: |
         Get collectivities global statistics between a date interval.
         Actually, statistics contain only overall percentage of members who are current with their dues (membership fees) and number of new members.
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
         - in: query
           name: from
           schema:
@@ -285,7 +280,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CollectivityOverallStatistics'
-
 
 components:
   schemas:
