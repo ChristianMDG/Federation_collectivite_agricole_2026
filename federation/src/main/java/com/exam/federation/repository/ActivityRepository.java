@@ -119,4 +119,32 @@ public class ActivityRepository {
 
         return activity;
     }
+
+    public List<CollectivityActivity> findByCollectivityId(String collectivityId) {
+        String sql = """
+            SELECT id, label, activity_type, member_occupation_concerned,
+                   recurrence_week_ordinal, recurrence_day_of_week, executive_date
+            FROM activity
+            WHERE collectivity_id = ?
+            ORDER BY COALESCE(executive_date, DATE '9999-12-31') ASC
+        """;
+
+        List<CollectivityActivity> activities = new ArrayList<>();
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, collectivityId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                activities.add(mapActivity(rs));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la récupération des activités: " + e.getMessage(), e);
+        }
+
+        return activities;
+    }
 }
