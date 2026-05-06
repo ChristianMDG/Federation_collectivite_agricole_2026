@@ -50,4 +50,18 @@ public class ActivityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+
+    @GetMapping("/{id}/activities")
+    public ResponseEntity<?> getActivities(@PathVariable String id) {
+        try {
+            List<CollectivityActivity> responses = activityService.getActivities(id);
+            return ResponseEntity.ok(responses);
+
+        } catch (BusinessException e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", e.getStatusCode());
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(error);
+        }
+    }
 }
