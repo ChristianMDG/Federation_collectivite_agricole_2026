@@ -203,6 +203,24 @@ CREATE TABLE activity
         )
 );
 
+-- Pour la table présence
+DROP TABLE IF EXISTS member_attendance CASCADE;
+DROP SEQUENCE IF EXISTS attendance_id_seq CASCADE;
+
+CREATE SEQUENCE attendance_id_seq START 1000;
+
+CREATE TABLE member_attendance (
+                                   id                VARCHAR PRIMARY KEY DEFAULT 'att_' || nextval('attendance_id_seq'),
+                                   activity_id       VARCHAR NOT NULL REFERENCES activity(id) ON DELETE CASCADE,
+                                   member_id         VARCHAR NOT NULL REFERENCES member(id) ON DELETE CASCADE,
+                                   attendance_status VARCHAR(10) NOT NULL CHECK (attendance_status IN ('ATTENDED', 'MISSING')),
+                                   created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                                   CONSTRAINT uk_activity_member UNIQUE (activity_id, member_id)
+);
+
+
+
 -- Index
 CREATE INDEX idx_activity_collectivity ON activity (collectivity_id);
 CREATE INDEX idx_member_email ON member (email);
@@ -214,3 +232,5 @@ CREATE INDEX idx_member_payment_date ON member_payment (creation_date);
 CREATE INDEX idx_transaction_collectivity ON collectivity_transaction (collectivity_id);
 CREATE INDEX idx_transaction_date ON collectivity_transaction (creation_date);
 CREATE INDEX idx_activity_collectivity ON activity (collectivity_id);
+CREATE INDEX idx_attendance_activity ON member_attendance(activity_id);
+CREATE INDEX idx_attendance_member ON member_attendance(member_id);
