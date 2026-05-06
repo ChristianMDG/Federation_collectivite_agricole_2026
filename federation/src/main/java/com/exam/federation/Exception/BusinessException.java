@@ -108,4 +108,11 @@ public class BusinessException extends RuntimeException {
     public static BusinessException invalidPaymentMode() {
         return new BusinessException(400, "Invalid payment mode. Allowed: CASH, MOBILE_BANKING, BANK_TRANSFER");
     }
+    public static BusinessException missingParameters() {
+        return new BusinessException(400, "Mandatory query parameters not provided or malformed");
+    }
+
+    public static BusinessException parametersException() {
+        return new BusinessException(400, "Provided query parameters occur some exceptions");
+    }
 }

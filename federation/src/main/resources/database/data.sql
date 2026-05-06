@@ -1,7 +1,3 @@
--- ============================================================
--- data.sql — Données de test
--- Conforme au schéma schema.sql fourni
--- ============================================================
 
 -- ============================================================
 -- 1. COLLECTIVITÉS
@@ -242,3 +238,86 @@ UPDATE financial_account SET amount = 100000, updated_at = CURRENT_TIMESTAMP WHE
 -- ============================================================
 -- Collectivité 3 : aucun paiement ni transaction
 -- ============================================================
+
+
+-- =====================================================
+-- ACTIVITÉS POUR COLLECTIVITÉ col-1
+-- =====================================================
+
+-- 1. Assemblée générale mensuelle (récurrente - 2ème dimanche)
+INSERT INTO activity (collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'col-1',
+           'Assemblée générale mensuelle',
+           'MEETING',
+           'PRESIDENT,VICE_PRESIDENT,TREASURER,SECRETARY,SENIOR',
+           2,
+           'SU',
+           NULL
+       );
+
+-- 2. Formation mensuelle des juniors (récurrente - 4ème samedi)
+INSERT INTO activity ( collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'col-1',
+           'Formation mensuelle des juniors',
+           'TRAINING',
+           'JUNIOR',
+           4,
+           'SA',
+           NULL
+       );
+
+-- 3. Assemblée générale extraordinaire (ponctuelle)
+INSERT INTO activity ( collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'col-1',
+           'Assemblée générale extraordinaire',
+           'MEETING',
+           'PRESIDENT,VICE_PRESIDENT,TREASURER,SECRETARY,SENIOR,JUNIOR',
+           NULL,
+           NULL,
+           '2026-06-15'
+       );
+
+-- 4. Réunion de crise (ponctuelle)
+INSERT INTO activity ( collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'col-1',
+           'Réunion de crise',
+           'MEETING',
+           'PRESIDENT,VICE_PRESIDENT,TREASURER,SECRETARY',
+           NULL,
+           NULL,
+           '2026-05-20'
+       );
+
+-- =====================================================
+-- ACTIVITÉS POUR COLLECTIVITÉ col-2
+-- =====================================================
+
+-- 1. Assemblée générale mensuelle col-2
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act_2000',
+           'col-2',
+           'Assemblée générale mensuelle',
+           'MEETING',
+           'PRESIDENT,VICE_PRESIDENT,TREASURER,SECRETARY,SENIOR',
+           1,
+           'MO',
+           NULL
+       );
+
+-- 2. Formation pisciculture (ponctuelle)
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act_2001',
+           'col-2',
+           'Formation pisciculture',
+           'TRAINING',
+           'SENIOR,JUNIOR',
+           NULL,
+           NULL,
+           '2026-07-10'
+       );

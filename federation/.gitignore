@@ -31,9 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
-<<<<<<< HEAD
-.idea
-.env
-=======
-../.env
->>>>>>> feature/c-d
+
+### Environment ###
+
+/.env

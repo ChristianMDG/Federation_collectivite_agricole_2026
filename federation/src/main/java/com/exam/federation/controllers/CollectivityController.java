@@ -3,6 +3,7 @@ package com.exam.federation.controllers;
 import com.exam.federation.Exception.BusinessException;
 import com.exam.federation.dto.*;
 import com.exam.federation.services.CollectivityService;
+import com.exam.federation.services.CollectivityStatisticsService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,13 @@ import java.util.Map;
 @RequestMapping("/collectivities")
 public class CollectivityController {
 
-    private final CollectivityService collectivityService;
+    private CollectivityService collectivityService;
+    private CollectivityStatisticsService collectivityStatisticsService;
 
-    public CollectivityController(CollectivityService collectivityService) {
+    public CollectivityController(CollectivityService collectivityService,
+                                  CollectivityStatisticsService collectivityStatisticsService) {
         this.collectivityService = collectivityService;
+        this.collectivityStatisticsService = collectivityStatisticsService;
     }
 
     @PostMapping
@@ -88,6 +92,17 @@ public class CollectivityController {
                             "status", e.getStatusCode(),
                             "message", e.getMessage()
                     ));
+        }
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<?> getOverallStatistics(
+            @RequestParam LocalDate from,
+            @RequestParam LocalDate to) {
+        try {
+            return ResponseEntity.ok(collectivityStatisticsService.getOverallStatistics(from, to));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getMessage()));
         }
     }
 }
