@@ -20,7 +20,7 @@ import java.util.Map;
 public class ActivityController {
 
     private final ActivityService activityService;
-    private AttendanceService attendanceService;
+    private final AttendanceService attendanceService;
 
     public ActivityController(ActivityService activityService, AttendanceService attendanceService) {
         this.activityService = activityService;

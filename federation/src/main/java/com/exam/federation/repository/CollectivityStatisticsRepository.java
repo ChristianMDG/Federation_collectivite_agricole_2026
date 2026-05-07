@@ -47,6 +47,8 @@ public class CollectivityStatisticsRepository {
                 stat.setNewMembersNumber(countNewMembers(conn, collectivityId, from, to));
                 stat.setOverallMemberCurrentDuePercentage(
                         computeCurrentDuePercentage(conn, collectivityId, from, to));
+                stat.setOverallMemberAssiduityPercentage(
+                        getAssiduityPercentage(conn, collectivityId, from, to));
                 stats.add(stat);
             }
         } catch (SQLException e) {
@@ -186,5 +188,84 @@ public class CollectivityStatisticsRepository {
             throw new RuntimeException("Erreur calcul paiement: " + e.getMessage(), e);
         }
         return 0.0;
+    }
+    private double getAssiduityPercentage(Connection conn, String collectivityId, LocalDate from, LocalDate to) {
+        String countMembersSql = """
+        SELECT COUNT(m.id)
+        FROM member m
+        INNER JOIN collectivity_members cm ON cm.member_id = m.id
+        WHERE cm.collectivity_id = ?
+    """;
+
+        int totalMembers = 0;
+        try (PreparedStatement ps = conn.prepareStatement(countMembersSql)) {
+            ps.setString(1, collectivityId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                totalMembers = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur comptage membres: " + e.getMessage(), e);
+        }
+
+        if (totalMembers == 0) {
+            return 0.0;
+        }
+
+        String countActivitiesSql = """
+        SELECT COUNT(id) 
+        FROM activity 
+        WHERE collectivity_id = ? 
+        AND (executive_date BETWEEN ? AND ? OR executive_date IS NULL)
+    """;
+
+        int totalActivities = 0;
+        try (PreparedStatement ps = conn.prepareStatement(countActivitiesSql)) {
+            ps.setString(1, collectivityId);
+            ps.setDate(2, Date.valueOf(from));
+            ps.setDate(3, Date.valueOf(to));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                totalActivities = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur comptage activités: " + e.getMessage(), e);
+        }
+
+        if (totalActivities == 0) {
+            return 0.0;
+        }
+
+        // Compter le nombre de présences
+        String countAttendanceSql = """
+        SELECT COUNT(ma.id) 
+        FROM member_attendance ma
+        INNER JOIN activity a ON a.id = ma.activity_id
+        WHERE a.collectivity_id = ?
+        AND ma.attendance_status = 'ATTENDED'
+        AND ma.created_at BETWEEN ? AND ?
+    """;
+
+        int totalAttendance = 0;
+        try (PreparedStatement ps = conn.prepareStatement(countAttendanceSql)) {
+            ps.setString(1, collectivityId);
+            ps.setDate(2, Date.valueOf(from));
+            ps.setDate(3, Date.valueOf(to));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                totalAttendance = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur comptage présences: " + e.getMessage(), e);
+        }
+
+        int maxPossibleAttendance = totalMembers * totalActivities;
+
+        if (maxPossibleAttendance == 0) {
+            return 0.0;
+        }
+
+        double percentage = (double) totalAttendance / maxPossibleAttendance * 100.0;
+        return Math.round(percentage * 100.0) / 100.0;
     }
 }

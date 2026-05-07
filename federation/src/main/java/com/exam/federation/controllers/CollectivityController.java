@@ -19,8 +19,8 @@ import java.util.Map;
 @RequestMapping("/collectivities")
 public class CollectivityController {
 
-    private CollectivityService collectivityService;
-    private CollectivityStatisticsService collectivityStatisticsService;
+    private final CollectivityService collectivityService;
+    private final CollectivityStatisticsService collectivityStatisticsService;
 
     public CollectivityController(CollectivityService collectivityService,
                                   CollectivityStatisticsService collectivityStatisticsService) {
@@ -42,7 +42,7 @@ public class CollectivityController {
         }
     }
 
-    @PutMapping("/{id}/identification")
+    @PutMapping("/{id}/informations")
     public ResponseEntity<?> assignIdentification(
             @PathVariable String id,
             @RequestBody AssignIdentificationRequest request) {

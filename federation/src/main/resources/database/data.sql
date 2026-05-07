@@ -1,323 +1,528 @@
+-- ============================================================
+-- NETTOYAGE COMPLET DE LA BASE
+-- ============================================================
+
+-- Supprimer toutes les données existantes
+TRUNCATE TABLE collectivity_transaction CASCADE;
+TRUNCATE TABLE member_payment CASCADE;
+TRUNCATE TABLE collectivity_financial_account CASCADE;
+TRUNCATE TABLE bank_account CASCADE;
+TRUNCATE TABLE mobile_banking_account CASCADE;
+TRUNCATE TABLE cash_account CASCADE;
+TRUNCATE TABLE financial_account CASCADE;
+TRUNCATE TABLE membership_fee CASCADE;
+TRUNCATE TABLE member_referees CASCADE;
+TRUNCATE TABLE collectivity_members CASCADE;
+TRUNCATE TABLE activity CASCADE;
+TRUNCATE TABLE member CASCADE;
+TRUNCATE TABLE collectivity CASCADE;
+
+-- Réinitialiser les séquences
+ALTER SEQUENCE member_id_seq RESTART WITH 1000;
+ALTER SEQUENCE collectivity_id_seq RESTART WITH 1000;
+ALTER SEQUENCE membership_fee_id_seq RESTART WITH 3000;
+ALTER SEQUENCE transaction_id_seq RESTART WITH 1000;
+ALTER SEQUENCE member_payment_id_seq RESTART WITH 1000;
+ALTER SEQUENCE financial_account_id_seq RESTART WITH 1000;
+ALTER SEQUENCE activity_id_seq RESTART WITH 1000;
 
 -- ============================================================
--- 1. COLLECTIVITÉS
--- (id géré manuellement pour les tests, number et name UNIQUE)
+-- TABLEAU 1 : COLLECTIVITÉS (3 collectivités)
 -- ============================================================
+
 INSERT INTO collectivity (id, number, name, location, speciality)
-VALUES
-    ('col-1', '1', 'Mpanorina',      'Ambatondrazaka', 'Riziculture'),
-    ('col-2', '2', 'Dobo voalohany', 'Ambatondrazaka', 'Pisciculture'),
-    ('col-3', '3', 'Tantely mamy',   'Brickaville',    'Apiculture');
-
+VALUES ('col-1', '1', 'Mpanorina', 'Ambatondrazaka', 'Riziculture'),
+       ('col-2', '2', 'Dobo voalohany', 'Ambatondrazaka', 'Pisciculture'),
+       ('col-3', '3', 'Tantely mamy', 'Brickaville', 'Apiculture');
 
 -- ============================================================
--- 2. MEMBRES — COLLECTIVITÉ 1
--- phone_number est INT → on supprime le zéro initial
--- occupation : SENIOR = membre confirmé (pas de CONFIRMED dans l'enum)
+-- TABLEAU 2 : MEMBRES COLLECTIVITÉ 1
 -- ============================================================
-INSERT INTO member (id, lastname, firstname, birthday, gender, address, profession, phone_number, email, occupation, collectivity_id)
-VALUES
-    ('C1-M1', 'Nom membre 1', 'Prénom membre 1', '1980-02-01', 'MALE',   'Lot II V M Ambato.',  'Riziculteur',  341234567,  'member.1@fed-agri.mg',  'PRESIDENT',      'col-1'),
-    ('C1-M2', 'Nom membre 2', 'Prénom membre 2', '1982-03-05', 'MALE',   'Lot II F Ambato.',    'Agriculteur',  321234567,  'member.2@fed-agri.mg',  'VICE_PRESIDENT', 'col-1'),
-    ('C1-M3', 'Nom membre 3', 'Prénom membre 3', '1992-03-10', 'MALE',   'Lot II J Ambato.',    'Collecteur',   331234567,  'member.3@fed-agri.mg',  'SECRETARY',      'col-1'),
-    ('C1-M4', 'Nom membre 4', 'Prénom membre 4', '1988-05-22', 'FEMALE', 'Lot A K 50 Ambato.',  'Distributeur', 381234567,  'member.4@fed-agri.mg',  'TREASURER',      'col-1'),
-    ('C1-M5', 'Nom membre 5', 'Prénom membre 5', '1999-08-21', 'MALE',   'Lot UV 80 Ambato.',   'Riziculteur',  373434567,  'member.5@fed-agri.mg',  'SENIOR',         'col-1'),
-    ('C1-M6', 'Nom membre 6', 'Prénom membre 6', '1998-08-22', 'FEMALE', 'Lot UV 6 Ambato.',    'Riziculteur',  372234567,  'member.6@fed-agri.mg',  'SENIOR',         'col-1'),
-    ('C1-M7', 'Nom membre 7', 'Prénom membre 7', '1998-01-31', 'MALE',   'Lot UV 7 Ambato.',    'Riziculteur',  374234567,  'member.7@fed-agri.mg',  'SENIOR',         'col-1'),
-    ('C1-M8', 'Nom membre 8', 'Prénom membre 8', '1975-08-20', 'MALE',   'Lot UV 8 Ambato.',    'Riziculteur',  370234567,  'member.8@fed-agri.mg',  'SENIOR',         'col-1');
 
--- Mise à jour des postes dans la collectivité 1
-UPDATE collectivity SET
-                        president_id      = 'C1-M1',
-                        vice_president_id = 'C1-M2',
-                        treasurer_id      = 'C1-M4',
-                        secretary_id      = 'C1-M3'
+INSERT INTO member (id, firstname, lastname, birthday, gender, address, profession, phone_number, email,
+                    registration_date, occupation, collectivity_id)
+VALUES ('C1-M1', 'Prénom membre 1', 'Nom membre 1', '1980-02-01', 'MALE', 'Lot II V M Ambato.', 'Riziculteur',
+        341234567, 'member.1@fed-agri.mg', '2026-01-01', 'PRESIDENT', 'col-1'),
+       ('C1-M2', 'Prénom membre 2', 'Nom membre 2', '1982-03-05', 'MALE', 'Lot II F Ambato.', 'Agriculteur', 321234567,
+        'member.2@fed-agri.mg', '2026-01-01', 'VICE_PRESIDENT', 'col-1'),
+       ('C1-M3', 'Prénom membre 3', 'Nom membre 3', '1992-03-10', 'MALE', 'Lot II J Ambato.', 'Collecteur', 331234567,
+        'member.3@fed-agri.mg', '2026-01-01', 'SECRETARY', 'col-1'),
+       ('C1-M4', 'Prénom membre 4', 'Nom membre 4', '1988-05-22', 'FEMALE', 'Lot A K 50 Ambato.', 'Distributeur',
+        381234567, 'member.4@fed-agri.mg', '2026-01-01', 'TREASURER', 'col-1'),
+       ('C1-M5', 'Prénom membre 5', 'Nom membre 5', '1999-08-21', 'MALE', 'Lot UV 80 Ambato.', 'Riziculteur', 373434567,
+        'member.5@fed-agri.mg', '2026-01-01', 'SENIOR', 'col-1'),
+       ('C1-M6', 'Prénom membre 6', 'Nom membre 6', '1998-08-22', 'FEMALE', 'Lot UV 6 Ambato.', 'Riziculteur',
+        372234567, 'member.6@fed-agri.mg', '2026-01-01', 'SENIOR', 'col-1'),
+       ('C1-M7', 'Prénom membre 7', 'Nom membre 7', '1998-01-31', 'MALE', 'Lot UV 7 Ambato.', 'Riziculteur', 374234567,
+        'member.7@fed-agri.mg', '2026-01-01', 'SENIOR', 'col-1'),
+       ('C1-M8', 'Prénom membre 8', 'Nom membre 8', '1975-08-20', 'MALE', 'Lot UV 8 Ambato.', 'Riziculteur', 370234567,
+        'member.8@fed-agri.mg', '2026-01-01', 'SENIOR', 'col-1');
+
+-- Référents collectivité 1
+INSERT INTO member_referees (member_id, referee_id)
+VALUES ('C1-M3', 'C1-M1'),
+       ('C1-M3', 'C1-M2'),
+       ('C1-M4', 'C1-M1'),
+       ('C1-M4', 'C1-M2'),
+       ('C1-M5', 'C1-M1'),
+       ('C1-M5', 'C1-M2'),
+       ('C1-M6', 'C1-M1'),
+       ('C1-M6', 'C1-M2'),
+       ('C1-M7', 'C1-M1'),
+       ('C1-M7', 'C1-M2'),
+       ('C1-M8', 'C1-M6'),
+       ('C1-M8', 'C1-M7');
+
+-- Association membres collectivité 1
+INSERT INTO collectivity_members (collectivity_id, member_id)
+VALUES ('col-1', 'C1-M1'),
+       ('col-1', 'C1-M2'),
+       ('col-1', 'C1-M3'),
+       ('col-1', 'C1-M4'),
+       ('col-1', 'C1-M5'),
+       ('col-1', 'C1-M6'),
+       ('col-1', 'C1-M7'),
+       ('col-1', 'C1-M8');
+
+-- Mise à jour des postes collectivité 1
+UPDATE collectivity
+SET president_id      = 'C1-M1',
+    vice_president_id = 'C1-M2',
+    secretary_id      = 'C1-M3',
+    treasurer_id      = 'C1-M4'
 WHERE id = 'col-1';
 
--- Membres dans collectivity_members — col-1
-INSERT INTO collectivity_members (collectivity_id, member_id) VALUES
-                                                                  ('col-1', 'C1-M1'), ('col-1', 'C1-M2'), ('col-1', 'C1-M3'), ('col-1', 'C1-M4'),
-                                                                  ('col-1', 'C1-M5'), ('col-1', 'C1-M6'), ('col-1', 'C1-M7'), ('col-1', 'C1-M8');
-
--- Parrainages — col-1
-INSERT INTO member_referees (member_id, referee_id) VALUES
-                                                        ('C1-M3', 'C1-M1'), ('C1-M3', 'C1-M2'),
-                                                        ('C1-M4', 'C1-M1'), ('C1-M4', 'C1-M2'),
-                                                        ('C1-M5', 'C1-M1'), ('C1-M5', 'C1-M2'),
-                                                        ('C1-M6', 'C1-M1'), ('C1-M6', 'C1-M2'),
-                                                        ('C1-M7', 'C1-M1'), ('C1-M7', 'C1-M2'),
-                                                        ('C1-M8', 'C1-M6'), ('C1-M8', 'C1-M7');
-
-
 -- ============================================================
--- 3. MEMBRES — COLLECTIVITÉ 2
--- Les mêmes personnes physiques mais enregistrées comme
--- membres distincts (C2-Mx) avec des rôles différents.
--- Email unique → suffixe .c2 pour éviter le conflit UNIQUE
+-- TABLEAU 3 : MEMBRES COLLECTIVITÉ 2 (mêmes membres que C1)
 -- ============================================================
-INSERT INTO member (id, lastname, firstname, birthday, gender, address, profession, phone_number, email, occupation, collectivity_id)
-VALUES
-    ('C2-M1', 'Nom membre 1', 'Prénom membre 1', '1980-02-01', 'MALE',   'Lot II V M Ambato.',  'Riziculteur',  341234568,  'member.1.c2@fed-agri.mg',  'SENIOR',         'col-2'),
-    ('C2-M2', 'Nom membre 2', 'Prénom membre 2', '1982-03-05', 'MALE',   'Lot II F Ambato.',    'Agriculteur',  321234568,  'member.2.c2@fed-agri.mg',  'SENIOR',         'col-2'),
-    ('C2-M3', 'Nom membre 3', 'Prénom membre 3', '1992-03-10', 'MALE',   'Lot II J Ambato.',    'Collecteur',   331234568,  'member.3.c2@fed-agri.mg',  'SENIOR',         'col-2'),
-    ('C2-M4', 'Nom membre 4', 'Prénom membre 4', '1988-05-22', 'FEMALE', 'Lot A K 50 Ambato.',  'Distributeur', 381234568,  'member.4.c2@fed-agri.mg',  'SENIOR',         'col-2'),
-    ('C2-M5', 'Nom membre 5', 'Prénom membre 5', '1999-08-21', 'MALE',   'Lot UV 80 Ambato.',   'Riziculteur',  373434568,  'member.5.c2@fed-agri.mg',  'PRESIDENT',      'col-2'),
-    ('C2-M6', 'Nom membre 6', 'Prénom membre 6', '1998-08-22', 'FEMALE', 'Lot UV 6 Ambato.',    'Riziculteur',  372234568,  'member.6.c2@fed-agri.mg',  'VICE_PRESIDENT', 'col-2'),
-    ('C2-M7', 'Nom membre 7', 'Prénom membre 7', '1998-01-31', 'MALE',   'Lot UV 7 Ambato.',    'Riziculteur',  374234568,  'member.7.c2@fed-agri.mg',  'SECRETARY',      'col-2'),
-    ('C2-M8', 'Nom membre 8', 'Prénom membre 8', '1975-08-20', 'MALE',   'Lot UV 8 Ambato.',    'Riziculteur',  370234568,  'member.8.c2@fed-agri.mg',  'TREASURER',      'col-2');
 
--- Mise à jour des postes dans la collectivité 2
-UPDATE collectivity SET
-                        president_id      = 'C2-M5',
-                        vice_president_id = 'C2-M6',
-                        secretary_id      = 'C2-M7',
-                        treasurer_id      = 'C2-M8'
+-- Association membres collectivité 2
+INSERT INTO collectivity_members (collectivity_id, member_id)
+VALUES ('col-2', 'C1-M1'),
+       ('col-2', 'C1-M2'),
+       ('col-2', 'C1-M3'),
+       ('col-2', 'C1-M4'),
+       ('col-2', 'C1-M5'),
+       ('col-2', 'C1-M6'),
+       ('col-2', 'C1-M7'),
+       ('col-2', 'C1-M8');
+
+-- Mise à jour des postes collectivité 2
+UPDATE collectivity
+SET president_id      = 'C1-M5',
+    vice_president_id = 'C1-M6',
+    secretary_id      = 'C1-M7',
+    treasurer_id      = 'C1-M8'
 WHERE id = 'col-2';
 
--- Membres dans collectivity_members — col-2
-INSERT INTO collectivity_members (collectivity_id, member_id) VALUES
-                                                                  ('col-2', 'C2-M1'), ('col-2', 'C2-M2'), ('col-2', 'C2-M3'), ('col-2', 'C2-M4'),
-                                                                  ('col-2', 'C2-M5'), ('col-2', 'C2-M6'), ('col-2', 'C2-M7'), ('col-2', 'C2-M8');
-
--- Parrainages — col-2 (parrainés par les membres confirmés de col-1)
-INSERT INTO member_referees (member_id, referee_id) VALUES
-                                                        ('C2-M3', 'C1-M1'), ('C2-M3', 'C1-M2'),
-                                                        ('C2-M4', 'C1-M1'), ('C2-M4', 'C1-M2'),
-                                                        ('C2-M5', 'C1-M1'), ('C2-M5', 'C1-M2'),
-                                                        ('C2-M6', 'C1-M1'), ('C2-M6', 'C1-M2'),
-                                                        ('C2-M7', 'C1-M1'), ('C2-M7', 'C1-M2'),
-                                                        ('C2-M8', 'C1-M6'), ('C2-M8', 'C1-M7');
-
-
 -- ============================================================
--- 4. MEMBRES — COLLECTIVITÉ 3
+-- TABLEAU 4 : MEMBRES COLLECTIVITÉ 3
 -- ============================================================
-INSERT INTO member (id, lastname, firstname, birthday, gender, address, profession, phone_number, email, occupation, collectivity_id)
-VALUES
-    ('C3-M1', 'Nom membre 9',  'Prénom membre 9',  '1988-01-02', 'MALE',   'Lot 33 J Antsirabe',   'Apiculteur',   34034567,   'member.9@fed-agri.mg',  'PRESIDENT',      'col-3'),
-    ('C3-M2', 'Nom membre 10', 'Prénom membre 10', '1982-03-05', 'MALE',   'Lot 2 J Antsirabe',    'Agriculteur',  338634567,  'member.10@fed-agri.mg', 'VICE_PRESIDENT', 'col-3'),
-    ('C3-M3', 'Nom membre 11', 'Prénom membre 11', '1992-03-12', 'MALE',   'Lot 8 KM Antsirabe',   'Collecteur',   338234567,  'member.11@fed-agri.mg', 'SECRETARY',      'col-3'),
-    ('C3-M4', 'Nom membre 12', 'Prénom membre 12', '1988-05-10', 'FEMALE', 'Lot A K 50 Antsirabe', 'Distributeur', 382334567,  'member.12@fed-agri.mg', 'TREASURER',      'col-3'),
-    ('C3-M5', 'Nom membre 13', 'Prénom membre 13', '1999-08-11', 'MALE',   'Lot UV 80 Antsirabe',  'Apiculteur',   373365567,  'member.13@fed-agri.mg', 'SENIOR',         'col-3'),
-    ('C3-M6', 'Nom membre 14', 'Prénom membre 14', '1998-08-09', 'FEMALE', 'Lot UV 6 Antsirabe',   'Apiculteur',   378234567,  'member.14@fed-agri.mg', 'SENIOR',         'col-3'),
-    ('C3-M7', 'Nom membre 15', 'Prénom membre 15', '1998-01-13', 'MALE',   'Lot UV 7 Antsirabe',   'Apiculteur',   374914567,  'member.15@fed-agri.mg', 'SENIOR',         'col-3'),
-    ('C3-M8', 'Nom membre 16', 'Prénom membre 16', '1975-08-02', 'MALE',   'Lot UV 8 Antsirabe',   'Apiculteur',   370634567,  'member.16@fed-agri.mg', 'SENIOR',         'col-3');
 
--- Mise à jour des postes dans la collectivité 3
-UPDATE collectivity SET
-                        president_id      = 'C3-M1',
-                        vice_president_id = 'C3-M2',
-                        secretary_id      = 'C3-M3',
-                        treasurer_id      = 'C3-M4'
+INSERT INTO member (id, firstname, lastname, birthday, gender, address, profession, phone_number, email,
+                    registration_date, occupation, collectivity_id)
+VALUES ('C3-M1', 'Prénom membre 9', 'Nom membre 9', '1988-01-02', 'MALE', 'Lot 33 J Antsirabe', 'Apiculteur', 34034567,
+        'member.9@fed-agri.mg', '2026-01-01', 'PRESIDENT', 'col-3'),
+       ('C3-M2', 'Prénom membre 10', 'Nom membre 10', '1982-03-05', 'MALE', 'Lot 2 J Antsirabe', 'Agriculteur',
+        338634567, 'member.10@fed-agri.mg', '2026-01-01', 'VICE_PRESIDENT', 'col-3'),
+       ('C3-M3', 'Prénom membre 11', 'Nom membre 11', '1992-03-12', 'MALE', 'Lot 8 KM Antsirabe', 'Collecteur',
+        338234567, 'member.11@fed-agri.mg', '2026-01-01', 'SECRETARY', 'col-3'),
+       ('C3-M4', 'Prénom membre 12', 'Nom membre 12', '1988-05-10', 'FEMALE', 'Lot A K 50 Antsirabe', 'Distributeur',
+        382334567, 'member.12@fed-agri.mg', '2026-01-01', 'TREASURER', 'col-3'),
+       ('C3-M5', 'Prénom membre 13', 'Nom membre 13', '1999-08-11', 'MALE', 'Lot UV 80 Antsirabe.', 'Apiculteur',
+        373365567, 'member.13@fed-agri.mg', '2026-01-01', 'SENIOR', 'col-3'),
+       ('C3-M6', 'Prénom membre 14', 'Nom membre 14', '1998-08-09', 'FEMALE', 'Lot UV 6 Antsirabe.', 'Apiculteur',
+        378234567, 'member.14@fed-agri.mg', '2026-01-01', 'SENIOR', 'col-3'),
+       ('C3-M7', 'Prénom membre 15', 'Nom membre 15', '1998-01-13', 'MALE', 'Lot UV 7 Antsirabe', 'Apiculteur',
+        374914567, 'member.15@fed-agri.mg', '2026-01-01', 'SENIOR', 'col-3'),
+       ('C3-M8', 'Prénom membre 16', 'Nom membre 16', '1975-08-02', 'MALE', 'Lot UV 8 Antsirabe', 'Apiculteur',
+        370634567, 'member.16@fed-agri.mg', '2026-01-01', 'SENIOR', 'col-3');
+
+-- Référents collectivité 3
+INSERT INTO member_referees (member_id, referee_id)
+VALUES ('C3-M3', 'C3-M1'),
+       ('C3-M3', 'C3-M2'),
+       ('C3-M4', 'C3-M1'),
+       ('C3-M4', 'C3-M2'),
+       ('C3-M5', 'C3-M1'),
+       ('C3-M5', 'C3-M2'),
+       ('C3-M6', 'C3-M1'),
+       ('C3-M6', 'C3-M2'),
+       ('C3-M7', 'C3-M1'),
+       ('C3-M7', 'C3-M2'),
+       ('C3-M8', 'C3-M1'),
+       ('C3-M8', 'C3-M2');
+
+-- Association membres collectivité 3
+INSERT INTO collectivity_members (collectivity_id, member_id)
+VALUES ('col-3', 'C3-M1'),
+       ('col-3', 'C3-M2'),
+       ('col-3', 'C3-M3'),
+       ('col-3', 'C3-M4'),
+       ('col-3', 'C3-M5'),
+       ('col-3', 'C3-M6'),
+       ('col-3', 'C3-M7'),
+       ('col-3', 'C3-M8');
+
+-- Mise à jour des postes collectivité 3
+UPDATE collectivity
+SET president_id      = 'C3-M1',
+    vice_president_id = 'C3-M2',
+    secretary_id      = 'C3-M3',
+    treasurer_id      = 'C3-M4'
 WHERE id = 'col-3';
 
--- Membres dans collectivity_members — col-3
-INSERT INTO collectivity_members (collectivity_id, member_id) VALUES
-                                                                  ('col-3', 'C3-M1'), ('col-3', 'C3-M2'), ('col-3', 'C3-M3'), ('col-3', 'C3-M4'),
-                                                                  ('col-3', 'C3-M5'), ('col-3', 'C3-M6'), ('col-3', 'C3-M7'), ('col-3', 'C3-M8');
-
--- Parrainages — col-3
-INSERT INTO member_referees (member_id, referee_id) VALUES
-                                                        ('C3-M3', 'C3-M1'), ('C3-M3', 'C3-M2'),
-                                                        ('C3-M4', 'C3-M1'), ('C3-M4', 'C3-M2'),
-                                                        ('C3-M5', 'C3-M1'), ('C3-M5', 'C3-M2'),
-                                                        ('C3-M6', 'C3-M1'), ('C3-M6', 'C3-M2'),
-                                                        ('C3-M7', 'C3-M1'), ('C3-M7', 'C3-M2'),
-                                                        ('C3-M8', 'C3-M1'), ('C3-M8', 'C3-M2');
-
-
 -- ============================================================
--- 5. COTISATIONS
--- ============================================================
-INSERT INTO membership_fee (id, label, status, frequency, eligible_from, amount, collectivity_id)
-VALUES
-    ('cot-1', 'Cotisation annuelle', 'ACTIVE', 'ANNUALLY', '2026-01-01', 100000, 'col-1'),
-    ('cot-2', 'Cotisation annuelle', 'ACTIVE', 'ANNUALLY', '2026-01-01', 100000, 'col-2'),
-    ('cot-3', 'Cotisation annuelle', 'ACTIVE', 'ANNUALLY', '2026-01-01',  50000, 'col-3');
-
-
--- ============================================================
--- 6. COMPTES FINANCIERS
--- Schéma : financial_account (id, amount, created_at, updated_at)
---          puis cash_account / mobile_banking_account selon le type
---          puis collectivity_financial_account pour le lien
+-- COMPTES FINANCIERS DES COLLECTIVITÉS
 -- ============================================================
 
--- financial_account parent — col-1
-INSERT INTO financial_account (id) VALUES ('C1-A-CASH'), ('C1-A-MOBILE-1');
--- financial_account parent — col-2
-INSERT INTO financial_account (id) VALUES ('C2-A-CASH'), ('C2-A-MOBILE-1');
--- financial_account parent — col-3
-INSERT INTO financial_account (id) VALUES ('C3-A-CASH');
+-- Collectivité 1 - Comptes
+INSERT INTO financial_account (id, amount)
+VALUES ('C1-A-CASH', 0),
+       ('C1-A-MOBILE-1', 0);
+INSERT INTO cash_account (id)
+VALUES ('C1-A-CASH');
+INSERT INTO mobile_banking_account (id, holder_name, mobile_banking_service, mobile_number)
+VALUES ('C1-A-MOBILE-1', 'Mpanorina', 'ORANGE_MONEY', '0370489612');
+INSERT INTO collectivity_financial_account (collectivity_id, financial_account_id)
+VALUES ('col-1', 'C1-A-CASH'),
+       ('col-1', 'C1-A-MOBILE-1');
 
--- Comptes caisse
-INSERT INTO cash_account (id) VALUES ('C1-A-CASH'), ('C2-A-CASH'), ('C3-A-CASH');
+-- Collectivité 2 - Comptes
+INSERT INTO financial_account (id, amount)
+VALUES ('C2-A-CASH', 0),
+       ('C2-A-MOBILE-1', 0);
+INSERT INTO cash_account (id)
+VALUES ('C2-A-CASH');
+INSERT INTO mobile_banking_account (id, holder_name, mobile_banking_service, mobile_number)
+VALUES ('C2-A-MOBILE-1', 'Dobo voalohany', 'ORANGE_MONEY', '0320489612');
+INSERT INTO collectivity_financial_account (collectivity_id, financial_account_id)
+VALUES ('col-2', 'C2-A-CASH'),
+       ('col-2', 'C2-A-MOBILE-1');
 
--- Comptes mobile money
-INSERT INTO mobile_banking_account (id, holder_name, mobile_banking_service, mobile_number) VALUES
-                                                                                                ('C1-A-MOBILE-1', 'Mpanorina',      'ORANGE_MONEY', '0370489612'),
-                                                                                                ('C2-A-MOBILE-1', 'Dobo voalohany', 'ORANGE_MONEY', '0320489612');
-
--- Liaison collectivité ↔ comptes
-INSERT INTO collectivity_financial_account (collectivity_id, financial_account_id) VALUES
-                                                                                       ('col-1', 'C1-A-CASH'),
-                                                                                       ('col-1', 'C1-A-MOBILE-1'),
-                                                                                       ('col-2', 'C2-A-CASH'),
-                                                                                       ('col-2', 'C2-A-MOBILE-1'),
-                                                                                       ('col-3', 'C3-A-CASH');
-
-
--- ============================================================
--- 7. PAIEMENTS — COLLECTIVITÉ 1
--- payment_mode : CASH | MOBILE_BANKING | BANK_TRANSFER (enum)
--- ============================================================
-INSERT INTO member_payment (member_id, amount, payment_mode, membership_fee_id, account_credited_id, creation_date)
-VALUES
-    ('C1-M1', 100000, 'CASH', 'cot-1', 'C1-A-CASH', '2026-01-01'),
-    ('C1-M2', 100000, 'CASH', 'cot-1', 'C1-A-CASH', '2026-01-01'),
-    ('C1-M3', 100000, 'CASH', 'cot-1', 'C1-A-CASH', '2026-01-01'),
-    ('C1-M4', 100000, 'CASH', 'cot-1', 'C1-A-CASH', '2026-01-01'),
-    ('C1-M5', 100000, 'CASH', 'cot-1', 'C1-A-CASH', '2026-01-01'),
-    ('C1-M6', 100000, 'CASH', 'cot-1', 'C1-A-CASH', '2026-01-01'),
-    ('C1-M7',  60000, 'CASH', 'cot-1', 'C1-A-CASH', '2026-01-01'),
-    ('C1-M8',  90000, 'CASH', 'cot-1', 'C1-A-CASH', '2026-01-01');
-
+-- Collectivité 3 - Comptes (caisse uniquement)
+INSERT INTO financial_account (id, amount)
+VALUES ('C3-A-CASH', 0);
+INSERT INTO cash_account (id)
+VALUES ('C3-A-CASH');
+INSERT INTO collectivity_financial_account (collectivity_id, financial_account_id)
+VALUES ('col-3', 'C3-A-CASH');
 
 -- ============================================================
--- 8. TRANSACTIONS — COLLECTIVITÉ 1
--- ============================================================
-INSERT INTO collectivity_transaction (collectivity_id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date)
-VALUES
-    ('col-1', 'C1-M1', 'cot-1', 'C1-A-CASH', 100000, 'CASH', '2026-01-01'),
-    ('col-1', 'C1-M2', 'cot-1', 'C1-A-CASH', 100000, 'CASH', '2026-01-01'),
-    ('col-1', 'C1-M3', 'cot-1', 'C1-A-CASH', 100000, 'CASH', '2026-01-01'),
-    ('col-1', 'C1-M4', 'cot-1', 'C1-A-CASH', 100000, 'CASH', '2026-01-01'),
-    ('col-1', 'C1-M5', 'cot-1', 'C1-A-CASH', 100000, 'CASH', '2026-01-01'),
-    ('col-1', 'C1-M6', 'cot-1', 'C1-A-CASH', 100000, 'CASH', '2026-01-01'),
-    ('col-1', 'C1-M7', 'cot-1', 'C1-A-CASH',  60000, 'CASH', '2026-01-01'),
-    ('col-1', 'C1-M8', 'cot-1', 'C1-A-CASH',  90000, 'CASH', '2026-01-01');
 
--- Mise à jour du solde du compte caisse col-1 (total = 750 000)
-UPDATE financial_account SET amount = 750000, updated_at = CURRENT_TIMESTAMP
+-- ============================================================
+-- NOUVELLES DONNÉES À INSÉRER APRÈS LES ANCIENNES
+-- ============================================================
+
+-- ============================================================
+-- 1. NOUVEAUX COMPTES FINANCIERS POUR LA COLLECTIVITÉ 3
+-- ============================================================
+
+-- Comptes bancaires
+INSERT INTO financial_account (id, amount)
+VALUES ('C3-A-BANK-1', 0),
+       ('C3-A-BANK-2', 0);
+
+INSERT INTO bank_account (id, holder_name, bank_name, bank_code, bank_branch_code, bank_account_number,
+                          bank_account_key)
+VALUES ('C3-A-BANK-1', 'Koto', 'BMOI', '00004', '00001', '12345678900', '12'),
+       ('C3-A-BANK-2', 'Naivo', 'BRED', '00008', '00003', '45678901230', '58');
+
+-- Compte mobile money MVOLA
+INSERT INTO financial_account (id, amount)
+VALUES ('C3-A-MOBILE-1', 0);
+INSERT INTO mobile_banking_account (id, holder_name, mobile_banking_service, mobile_number)
+VALUES ('C3-A-MOBILE-1', 'Kolo', 'MVOLA', '0341889612');
+
+-- Association des nouveaux comptes avec la collectivité 3
+INSERT INTO collectivity_financial_account (collectivity_id, financial_account_id)
+VALUES ('col-3', 'C3-A-BANK-1'),
+       ('col-3', 'C3-A-BANK-2'),
+       ('col-3', 'C3-A-MOBILE-1');
+
+-- ============================================================
+-- 2. COTISATIONS (MEMBERSHIP FEES)
+-- ============================================================
+
+-- Collectivité 1
+INSERT INTO membership_fee (id, collectivity_id, label, status, frequency, eligible_from, amount)
+VALUES ('cot-1', 'col-1', 'Cotisation annuelle', 'ACTIVE', 'ANNUALLY', '2026-01-01', 200000.00),
+       ('cot-2', 'col-1', 'Famangiana', 'ACTIVE', 'PUNCTUALLY', '2026-04-30', 20000.00);
+
+-- Collectivité 2
+INSERT INTO membership_fee (id, collectivity_id, label, status, frequency, eligible_from, amount)
+VALUES ('cot-3', 'col-2', 'Cotisation annuelle', 'ACTIVE', 'ANNUALLY', '2026-01-01', 200000.00),
+       ('cot-4', 'col-2', 'Cotisation 2025', 'INACTIVE', 'ANNUALLY', '2025-01-01', 100000.00);
+
+-- Collectivité 3
+INSERT INTO membership_fee (id, collectivity_id, label, status, frequency, eligible_from, amount)
+VALUES ('cot-5', 'col-3', 'Cotisation mensuelle', 'ACTIVE', 'MONTHLY', '2026-04-01', 25000.00);
+
+-- ============================================================
+-- 3. PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 1
+-- ============================================================
+
+-- Paiements
+INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date)
+VALUES ('mp-c1-1', 'C1-M1', 'cot-1', 'C1-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('mp-c1-2', 'C1-M2', 'cot-1', 'C1-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('mp-c1-3', 'C1-M3', 'cot-1', 'C1-A-MOBILE-1', 200000.00, 'MOBILE_BANKING', '2026-01-01'),
+       ('mp-c1-4', 'C1-M4', 'cot-1', 'C1-A-MOBILE-1', 200000.00, 'MOBILE_BANKING', '2026-01-01'),
+       ('mp-c1-5', 'C1-M5', 'cot-1', 'C1-A-MOBILE-1', 150000.00, 'MOBILE_BANKING', '2026-01-01'),
+       ('mp-c1-6', 'C1-M6', 'cot-1', 'C1-A-CASH', 100000.00, 'CASH', '2026-05-01'),
+       ('mp-c1-7', 'C1-M7', 'cot-1', 'C1-A-CASH', 60000.00, 'CASH', '2026-05-01'),
+       ('mp-c1-8', 'C1-M8', 'cot-1', 'C1-A-CASH', 90000.00, 'CASH', '2026-05-01');
+
+-- Transactions
+INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount,
+                                      payment_mode, creation_date)
+VALUES ('tr-c1-1', 'col-1', 'C1-M1', 'cot-1', 'C1-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('tr-c1-2', 'col-1', 'C1-M2', 'cot-1', 'C1-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('tr-c1-3', 'col-1', 'C1-M3', 'cot-1', 'C1-A-MOBILE-1', 200000.00, 'MOBILE_BANKING', '2026-01-01'),
+       ('tr-c1-4', 'col-1', 'C1-M4', 'cot-1', 'C1-A-MOBILE-1', 200000.00, 'MOBILE_BANKING', '2026-01-01'),
+       ('tr-c1-5', 'col-1', 'C1-M5', 'cot-1', 'C1-A-MOBILE-1', 150000.00, 'MOBILE_BANKING', '2026-01-01'),
+       ('tr-c1-6', 'col-1', 'C1-M6', 'cot-1', 'C1-A-CASH', 100000.00, 'CASH', '2026-05-01'),
+       ('tr-c1-7', 'col-1', 'C1-M7', 'cot-1', 'C1-A-CASH', 60000.00, 'CASH', '2026-05-01'),
+       ('tr-c1-8', 'col-1', 'C1-M8', 'cot-1', 'C1-A-CASH', 90000.00, 'CASH', '2026-05-01');
+
+-- Mise à jour des soldes collectivité 1
+UPDATE financial_account
+SET amount     = 650000.00,
+    updated_at = CURRENT_TIMESTAMP
 WHERE id = 'C1-A-CASH';
-
-
--- ============================================================
--- 9. PAIEMENTS — COLLECTIVITÉ 2
--- ============================================================
-INSERT INTO member_payment (member_id, amount, payment_mode, membership_fee_id, account_credited_id, creation_date)
-VALUES
-    ('C2-M1',  60000, 'CASH',           'cot-2', 'C2-A-CASH',     '2026-01-01'),
-    ('C2-M2',  90000, 'CASH',           'cot-2', 'C2-A-CASH',     '2026-01-01'),
-    ('C2-M3', 100000, 'CASH',           'cot-2', 'C2-A-CASH',     '2026-01-01'),
-    ('C2-M4', 100000, 'CASH',           'cot-2', 'C2-A-CASH',     '2026-01-01'),
-    ('C2-M5', 100000, 'CASH',           'cot-2', 'C2-A-CASH',     '2026-01-01'),
-    ('C2-M6', 100000, 'CASH',           'cot-2', 'C2-A-CASH',     '2026-01-01'),
-    ('C2-M7',  40000, 'MOBILE_BANKING', 'cot-2', 'C2-A-MOBILE-1', '2026-01-01'),
-    ('C2-M8',  60000, 'MOBILE_BANKING', 'cot-2', 'C2-A-MOBILE-1', '2026-01-01');
-
+UPDATE financial_account
+SET amount     = 550000.00,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 'C1-A-MOBILE-1';
 
 -- ============================================================
--- 10. TRANSACTIONS — COLLECTIVITÉ 2
--- ============================================================
-INSERT INTO collectivity_transaction (collectivity_id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date)
-VALUES
-    ('col-2', 'C2-M1', 'cot-2', 'C2-A-CASH',      60000, 'CASH',           '2026-01-01'),
-    ('col-2', 'C2-M2', 'cot-2', 'C2-A-CASH',      90000, 'CASH',           '2026-01-01'),
-    ('col-2', 'C2-M3', 'cot-2', 'C2-A-CASH',     100000, 'CASH',           '2026-01-01'),
-    ('col-2', 'C2-M4', 'cot-2', 'C2-A-CASH',     100000, 'CASH',           '2026-01-01'),
-    ('col-2', 'C2-M5', 'cot-2', 'C2-A-CASH',     100000, 'CASH',           '2026-01-01'),
-    ('col-2', 'C2-M6', 'cot-2', 'C2-A-CASH',     100000, 'CASH',           '2026-01-01'),
-    ('col-2', 'C2-M7', 'cot-2', 'C2-A-MOBILE-1',  40000, 'MOBILE_BANKING', '2026-01-01'),
-    ('col-2', 'C2-M8', 'cot-2', 'C2-A-MOBILE-1',  60000, 'MOBILE_BANKING', '2026-01-01');
-
--- Mise à jour des soldes col-2 (CASH = 550 000, MOBILE = 100 000)
-UPDATE financial_account SET amount = 550000, updated_at = CURRENT_TIMESTAMP WHERE id = 'C2-A-CASH';
-UPDATE financial_account SET amount = 100000, updated_at = CURRENT_TIMESTAMP WHERE id = 'C2-A-MOBILE-1';
-
--- ============================================================
--- Collectivité 3 : aucun paiement ni transaction
+-- 4. PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 2
 -- ============================================================
 
+-- Paiements
+INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date)
+VALUES ('mp-c2-1', 'C1-M1', 'cot-3', 'C2-A-CASH', 120000.00, 'CASH', '2026-01-01'),
+       ('mp-c2-2', 'C1-M2', 'cot-3', 'C2-A-CASH', 180000.00, 'CASH', '2026-01-01'),
+       ('mp-c2-3', 'C1-M3', 'cot-3', 'C2-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('mp-c2-4', 'C1-M4', 'cot-3', 'C2-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('mp-c2-5', 'C1-M5', 'cot-3', 'C2-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('mp-c2-6', 'C1-M6', 'cot-3', 'C2-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('mp-c2-7', 'C1-M7', 'cot-3', 'C2-A-MOBILE-1', 80000.00, 'MOBILE_BANKING', '2026-01-01'),
+       ('mp-c2-8', 'C1-M8', 'cot-3', 'C2-A-MOBILE-1', 120000.00, 'MOBILE_BANKING', '2026-01-01');
 
--- =====================================================
--- ACTIVITÉS POUR COLLECTIVITÉ col-1
--- =====================================================
+-- Transactions
+INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount,
+                                      payment_mode, creation_date)
+VALUES ('tr-c2-1', 'col-2', 'C1-M1', 'cot-3', 'C2-A-CASH', 120000.00, 'CASH', '2026-01-01'),
+       ('tr-c2-2', 'col-2', 'C1-M2', 'cot-3', 'C2-A-CASH', 180000.00, 'CASH', '2026-01-01'),
+       ('tr-c2-3', 'col-2', 'C1-M3', 'cot-3', 'C2-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('tr-c2-4', 'col-2', 'C1-M4', 'cot-3', 'C2-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('tr-c2-5', 'col-2', 'C1-M5', 'cot-3', 'C2-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('tr-c2-6', 'col-2', 'C1-M6', 'cot-3', 'C2-A-CASH', 200000.00, 'CASH', '2026-01-01'),
+       ('tr-c2-7', 'col-2', 'C1-M7', 'cot-3', 'C2-A-MOBILE-1', 80000.00, 'MOBILE_BANKING', '2026-01-01'),
+       ('tr-c2-8', 'col-2', 'C1-M8', 'cot-3', 'C2-A-MOBILE-1', 120000.00, 'MOBILE_BANKING', '2026-01-01');
 
--- 1. Assemblée générale mensuelle (récurrente - 2ème dimanche)
-INSERT INTO activity (collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
-VALUES (
-           'col-1',
-           'Assemblée générale mensuelle',
-           'MEETING',
-           'PRESIDENT,VICE_PRESIDENT,TREASURER,SECRETARY,SENIOR',
-           2,
-           'SU',
-           NULL
-       );
+-- Mise à jour des soldes collectivité 2
+UPDATE financial_account
+SET amount     = 1100000.00,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 'C2-A-CASH';
+UPDATE financial_account
+SET amount     = 200000.00,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 'C2-A-MOBILE-1';
 
--- 2. Formation mensuelle des juniors (récurrente - 4ème samedi)
-INSERT INTO activity ( collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
-VALUES (
-           'col-1',
-           'Formation mensuelle des juniors',
-           'TRAINING',
-           'JUNIOR',
-           4,
-           'SA',
-           NULL
-       );
+-- ============================================================
+-- 5. PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 3 (AVRIL 2026)
+-- ============================================================
 
--- 3. Assemblée générale extraordinaire (ponctuelle)
-INSERT INTO activity ( collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
-VALUES (
-           'col-1',
-           'Assemblée générale extraordinaire',
-           'MEETING',
-           'PRESIDENT,VICE_PRESIDENT,TREASURER,SECRETARY,SENIOR,JUNIOR',
-           NULL,
-           NULL,
-           '2026-06-15'
-       );
+-- Paiements avril 2026
+INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date)
+VALUES ('mp-c3-apr-1', 'C3-M1', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('mp-c3-apr-2', 'C3-M2', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('mp-c3-apr-3', 'C3-M3', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('mp-c3-apr-4', 'C3-M4', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('mp-c3-apr-5', 'C3-M5', 'cot-5', 'C3-A-BANK-2', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('mp-c3-apr-6', 'C3-M6', 'cot-5', 'C3-A-BANK-2', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('mp-c3-apr-7', 'C3-M7', 'cot-5', 'C3-A-CASH', 25000.00, 'CASH', '2026-04-01'),
+       ('mp-c3-apr-8', 'C3-M8', 'cot-5', 'C3-A-CASH', 25000.00, 'CASH', '2026-04-01');
 
--- 4. Réunion de crise (ponctuelle)
-INSERT INTO activity ( collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
-VALUES (
-           'col-1',
-           'Réunion de crise',
-           'MEETING',
-           'PRESIDENT,VICE_PRESIDENT,TREASURER,SECRETARY',
-           NULL,
-           NULL,
-           '2026-05-20'
-       );
+-- Transactions avril 2026
+INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount,
+                                      payment_mode, creation_date)
+VALUES ('tr-c3-apr-1', 'col-3', 'C3-M1', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('tr-c3-apr-2', 'col-3', 'C3-M2', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('tr-c3-apr-3', 'col-3', 'C3-M3', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('tr-c3-apr-4', 'col-3', 'C3-M4', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('tr-c3-apr-5', 'col-3', 'C3-M5', 'cot-5', 'C3-A-BANK-2', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('tr-c3-apr-6', 'col-3', 'C3-M6', 'cot-5', 'C3-A-BANK-2', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
+       ('tr-c3-apr-7', 'col-3', 'C3-M7', 'cot-5', 'C3-A-CASH', 25000.00, 'CASH', '2026-04-01'),
+       ('tr-c3-apr-8', 'col-3', 'C3-M8', 'cot-5', 'C3-A-CASH', 25000.00, 'CASH', '2026-04-01');
 
--- =====================================================
--- ACTIVITÉS POUR COLLECTIVITÉ col-2
--- =====================================================
+-- ============================================================
+-- 6. PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 3 (MAI 2026)
+-- ============================================================
 
--- 1. Assemblée générale mensuelle col-2
-INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
-VALUES (
-           'act_2000',
-           'col-2',
-           'Assemblée générale mensuelle',
-           'MEETING',
-           'PRESIDENT,VICE_PRESIDENT,TREASURER,SECRETARY,SENIOR',
-           1,
-           'MO',
-           NULL
-       );
+-- Paiements mai 2026
+INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date)
+VALUES ('mp-c3-may-1', 'C3-M1', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
+       ('mp-c3-may-2', 'C3-M2', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
+       ('mp-c3-may-3', 'C3-M3', 'cot-5', 'C3-A-MOBILE-1', 15000.00, 'MOBILE_BANKING', '2026-05-01'),
+       ('mp-c3-may-4', 'C3-M4', 'cot-5', 'C3-A-MOBILE-1', 15000.00, 'MOBILE_BANKING', '2026-05-01'),
+       ('mp-c3-may-5', 'C3-M5', 'cot-5', 'C3-A-BANK-2', 20000.00, 'BANK_TRANSFER', '2026-05-01'),
+       ('mp-c3-may-6', 'C3-M6', 'cot-5', 'C3-A-BANK-2', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
+       ('mp-c3-may-7', 'C3-M7', 'cot-5', 'C3-A-CASH', 5000.00, 'CASH', '2026-05-01'),
+       ('mp-c3-may-8', 'C3-M8', 'cot-5', 'C3-A-CASH', 5000.00, 'CASH', '2026-05-01');
 
--- 2. Formation pisciculture (ponctuelle)
-INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
-VALUES (
-           'act_2001',
-           'col-2',
-           'Formation pisciculture',
-           'TRAINING',
-           'SENIOR,JUNIOR',
-           NULL,
-           NULL,
-           '2026-07-10'
-       );
+-- Transactions mai 2026
+INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount,
+                                      payment_mode, creation_date)
+VALUES ('tr-c3-may-1', 'col-3', 'C3-M1', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
+       ('tr-c3-may-2', 'col-3', 'C3-M2', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
+       ('tr-c3-may-3', 'col-3', 'C3-M3', 'cot-5', 'C3-A-MOBILE-1', 15000.00, 'MOBILE_BANKING', '2026-05-01'),
+       ('tr-c3-may-4', 'col-3', 'C3-M4', 'cot-5', 'C3-A-MOBILE-1', 15000.00, 'MOBILE_BANKING', '2026-05-01'),
+       ('tr-c3-may-5', 'col-3', 'C3-M5', 'cot-5', 'C3-A-BANK-2', 20000.00, 'BANK_TRANSFER', '2026-05-01'),
+       ('tr-c3-may-6', 'col-3', 'C3-M6', 'cot-5', 'C3-A-BANK-2', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
+       ('tr-c3-may-7', 'col-3', 'C3-M7', 'cot-5', 'C3-A-CASH', 5000.00, 'CASH', '2026-05-01'),
+       ('tr-c3-may-8', 'col-3', 'C3-M8', 'cot-5', 'C3-A-CASH', 5000.00, 'CASH', '2026-05-01');
+
+-- Mise à jour des soldes collectivité 3
+UPDATE financial_account
+SET amount     = 150000.00,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 'C3-A-BANK-1';
+UPDATE financial_account
+SET amount     = 95000.00,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 'C3-A-BANK-2';
+UPDATE financial_account
+SET amount     = 30000.00,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 'C3-A-MOBILE-1';
+UPDATE financial_account
+SET amount     = 60000.00,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 'C3-A-CASH';
+
+-- ============================================================
+-- 7. NOUVEAUX MEMBRES JUNIORS
+-- ============================================================
+
+-- Collectivité 1 - 4 nouveaux juniors
+INSERT INTO member (id, firstname, lastname, birthday, gender, address, profession, phone_number, email,
+                    registration_date, occupation, collectivity_id)
+VALUES ('C1-NEW-1', 'Junior1Col1', 'Nouveau', '2000-01-01', 'MALE', 'Ambatondrazaka', 'Agriculteur', 340000001,
+        'new.c1.1@fed-agri.mg', '2026-04-01', 'JUNIOR', 'col-1'),
+       ('C1-NEW-2', 'Junior2Col1', 'Nouveau', '2000-01-02', 'FEMALE', 'Ambatondrazaka', 'Agriculteur', 340000002,
+        'new.c1.2@fed-agri.mg', '2026-04-01', 'JUNIOR', 'col-1'),
+       ('C1-NEW-3', 'Junior3Col1', 'Nouveau', '2000-01-03', 'MALE', 'Ambatondrazaka', 'Agriculteur', 340000003,
+        'new.c1.3@fed-agri.mg', '2026-05-01', 'JUNIOR', 'col-1'),
+       ('C1-NEW-4', 'Junior4Col1', 'Nouveau', '2000-01-04', 'FEMALE', 'Ambatondrazaka', 'Agriculteur', 340000004,
+        'new.c1.4@fed-agri.mg', '2026-06-01', 'JUNIOR', 'col-1');
+
+INSERT INTO member_referees (member_id, referee_id)
+VALUES ('C1-NEW-1', 'C1-M1'),
+       ('C1-NEW-1', 'C1-M2'),
+       ('C1-NEW-2', 'C1-M1'),
+       ('C1-NEW-2', 'C1-M2'),
+       ('C1-NEW-3', 'C1-M1'),
+       ('C1-NEW-3', 'C1-M2'),
+       ('C1-NEW-4', 'C1-M1'),
+       ('C1-NEW-4', 'C1-M2');
+
+INSERT INTO collectivity_members (collectivity_id, member_id)
+VALUES ('col-1', 'C1-NEW-1'),
+       ('col-1', 'C1-NEW-2'),
+       ('col-1', 'C1-NEW-3'),
+       ('col-1', 'C1-NEW-4');
+
+-- Collectivité 2 - 3 nouveaux juniors
+INSERT INTO member (id, firstname, lastname, birthday, gender, address, profession, phone_number, email,
+                    registration_date, occupation, collectivity_id)
+VALUES ('C2-NEW-1', 'Junior1Col2', 'Nouveau', '2001-01-01', 'MALE', 'Ambatondrazaka', 'Agriculteur', 320000001,
+        'new.c2.1@fed-agri.mg', '2026-03-01', 'JUNIOR', 'col-2'),
+       ('C2-NEW-2', 'Junior2Col2', 'Nouveau', '2001-01-02', 'FEMALE', 'Ambatondrazaka', 'Agriculteur', 320000002,
+        'new.c2.2@fed-agri.mg', '2026-03-01', 'JUNIOR', 'col-2'),
+       ('C2-NEW-3', 'Junior3Col2', 'Nouveau', '2001-01-03', 'MALE', 'Ambatondrazaka', 'Agriculteur', 320000003,
+        'new.c2.3@fed-agri.mg', '2026-03-01', 'JUNIOR', 'col-2');
+
+INSERT INTO member_referees (member_id, referee_id)
+VALUES ('C2-NEW-1', 'C1-M1'),
+       ('C2-NEW-1', 'C1-M2'),
+       ('C2-NEW-2', 'C1-M1'),
+       ('C2-NEW-2', 'C1-M2'),
+       ('C2-NEW-3', 'C1-M1'),
+       ('C2-NEW-3', 'C1-M2');
+
+INSERT INTO collectivity_members (collectivity_id, member_id)
+VALUES ('col-2', 'C2-NEW-1'),
+       ('col-2', 'C2-NEW-2'),
+       ('col-2', 'C2-NEW-3');
+
+-- Collectivité 3 - 6 nouveaux juniors
+INSERT INTO member (id, firstname, lastname, birthday, gender, address, profession, phone_number, email,
+                    registration_date, occupation, collectivity_id)
+VALUES ('C3-NEW-1', 'Junior1Col3', 'Nouveau', '2002-01-01', 'MALE', 'Brickaville', 'Apiculteur', 340100001,
+        'new.c3.1@fed-agri.mg', '2026-01-01', 'JUNIOR', 'col-3'),
+       ('C3-NEW-2', 'Junior2Col3', 'Nouveau', '2002-01-02', 'FEMALE', 'Brickaville', 'Apiculteur', 340100002,
+        'new.c3.2@fed-agri.mg', '2026-02-01', 'JUNIOR', 'col-3'),
+       ('C3-NEW-3', 'Junior3Col3', 'Nouveau', '2002-01-03', 'MALE', 'Brickaville', 'Apiculteur', 340100003,
+        'new.c3.3@fed-agri.mg', '2026-02-01', 'JUNIOR', 'col-3'),
+       ('C3-NEW-4', 'Junior4Col3', 'Nouveau', '2002-01-04', 'FEMALE', 'Brickaville', 'Apiculteur', 340100004,
+        'new.c3.4@fed-agri.mg', '2026-03-01', 'JUNIOR', 'col-3'),
+       ('C3-NEW-5', 'Junior5Col3', 'Nouveau', '2002-01-05', 'MALE', 'Brickaville', 'Apiculteur', 340100005,
+        'new.c3.5@fed-agri.mg', '2026-03-01', 'JUNIOR', 'col-3'),
+       ('C3-NEW-6', 'Junior6Col3', 'Nouveau', '2002-01-06', 'FEMALE', 'Brickaville', 'Apiculteur', 340100006,
+        'new.c3.6@fed-agri.mg', '2026-03-01', 'JUNIOR', 'col-3');
+
+INSERT INTO member_referees (member_id, referee_id)
+VALUES ('C3-NEW-1', 'C3-M1'),
+       ('C3-NEW-1', 'C3-M2'),
+       ('C3-NEW-2', 'C3-M1'),
+       ('C3-NEW-2', 'C3-M2'),
+       ('C3-NEW-3', 'C3-M1'),
+       ('C3-NEW-3', 'C3-M2'),
+       ('C3-NEW-4', 'C3-M1'),
+       ('C3-NEW-4', 'C3-M2'),
+       ('C3-NEW-5', 'C3-M1'),
+       ('C3-NEW-5', 'C3-M2'),
+       ('C3-NEW-6', 'C3-M1'),
+       ('C3-NEW-6', 'C3-M2');
+
+INSERT INTO collectivity_members (collectivity_id, member_id)
+VALUES ('col-3', 'C3-NEW-1'),
+       ('col-3', 'C3-NEW-2'),
+       ('col-3', 'C3-NEW-3'),
+       ('col-3', 'C3-NEW-4'),
+       ('col-3', 'C3-NEW-5'),
+       ('col-3', 'C3-NEW-6');
+
+-- ============================================================
+-- VÉRIFICATION FINALE
+-- ============================================================
+
+-- Vérifier les cotisations actives
+SELECT id, collectivity_id, label, status, amount
+FROM membership_fee;
+
+-- Vérifier les paiements par collectivité
+SELECT c.name         as collectivity,
+       COUNT(mp.id)   as nb_payments,
+       SUM(mp.amount) as total_amount
+FROM member_payment mp
+         JOIN member m ON m.id = mp.member_id
+         JOIN collectivity c ON c.id = m.collectivity_id
+GROUP BY c.id, c.name;
+
+-- Vérifier les soldes des comptes
+SELECT fa.id, fa.amount, fa.updated_at
+FROM financial_account fa
+WHERE fa.id IN ('C1-A-CASH', 'C1-A-MOBILE-1', 'C2-A-CASH', 'C2-A-MOBILE-1',
+                'C3-A-CASH', 'C3-A-BANK-1', 'C3-A-BANK-2', 'C3-A-MOBILE-1');
+
+
+-- Vérifier la date d'enregistrement des membres
+SELECT id, firstname, lastname, registration_date
+FROM member
+WHERE id IN ('C1-M1', 'C1-M2', 'C1-M3', 'C1-M4', 'C1-M5', 'C1-M6', 'C1-M7', 'C1-M8', 'C1-NEW-1', 'C1-NEW-2')
+ORDER BY registration_date;
