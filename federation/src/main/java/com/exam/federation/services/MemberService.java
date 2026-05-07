@@ -10,6 +10,7 @@ import com.exam.federation.repository.MemberRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +27,27 @@ public class MemberService {
 
         for (CreateMember request : requests) {
 
+            if (request.getFirstName() == null || request.getFirstName().isEmpty()) {
+                throw new BusinessException(400, "First name is required");
+            }
+            if (request.getLastName() == null || request.getLastName().isEmpty()) {
+                throw new BusinessException(400, "Last name is required");
+            }
+            if (request.getBirthDate() == null) {
+                throw new BusinessException(400, "Birth date is required");
+            }
+            if (request.getGender() == null) {
+                throw new BusinessException(400, "Gender is required");
+            }
+            if (request.getAddress() == null || request.getAddress().isEmpty()) {
+                throw new BusinessException(400, "Address is required");
+            }
+            if (request.getProfession() == null || request.getProfession().isEmpty()) {
+                throw new BusinessException(400, "Profession is required");
+            }
+            if (request.getPhoneNumber() == null) {
+                throw new BusinessException(400, "Phone number is required");
+            }
             if (request.getEmail() == null || request.getEmail().isEmpty()) {
                 throw BusinessException.emailRequired();
             }
@@ -34,11 +56,30 @@ public class MemberService {
                 throw BusinessException.emailAlreadyExists(request.getEmail());
             }
 
-            if (request.getReferees() != null) {
-                for (String refereeId : request.getReferees()) {
-                    if (!memberRepository.existsById(refereeId)) {
-                        throw BusinessException.refereeNotFound(refereeId);
-                    }
+            if (request.getRegistrationFeePaid() == null || !request.getRegistrationFeePaid()) {
+                throw new BusinessException(400, "Registration fee of 50.000 Ar must be paid");
+            }
+
+            if (request.getReferees() == null || request.getReferees().isEmpty()) {
+                throw new BusinessException(400, "At least one referee is required");
+            }
+
+            LocalDate ninetyDaysAgo = LocalDate.now().minusDays(90);
+
+            for (String refereeId : request.getReferees()) {
+
+                if (!memberRepository.existsById(refereeId)) {
+                    throw BusinessException.refereeNotFound(refereeId);
+                }
+
+                String refereeOccupation = memberRepository.getOccupation(refereeId);
+                if (refereeOccupation == null || !"SENIOR".equals(refereeOccupation)) {
+                    throw new BusinessException(400, "Referee must be a confirmed member (SENIOR)");
+                }
+
+                LocalDate refereeRegistrationDate = memberRepository.getRegistrationDate(refereeId);
+                if (refereeRegistrationDate == null || !refereeRegistrationDate.isBefore(ninetyDaysAgo)) {
+                    throw new BusinessException(400, "Referee must have seniority greater than 90 days");
                 }
             }
 
@@ -48,26 +89,22 @@ public class MemberService {
         return responses;
     }
 
-
     public List<MemberPayment> createPayments(String memberId, List<CreateMemberPayment> requests) {
-        // 1. Vérifier que le membre existe
+
         if (!memberRepository.existsById(memberId)) {
             throw BusinessException.memberNotFound(memberId);
         }
 
-        // 2. Récupérer la collectivité du membre
         String collectivityId = paymentRepository.findCollectivityIdByMemberId(memberId);
         if (collectivityId == null) {
             throw new BusinessException(400, "Member is not associated with any collectivity");
         }
 
-        // 3. Récupérer l'ID de la cotisation active
         String membershipFeeId = paymentRepository.getMembershipFeeIdByCollectivity(collectivityId);
         if (membershipFeeId == null) {
             throw new BusinessException(404, "No active membership fee found for this collectivity");
         }
 
-        // 4. Valider chaque paiement
         for (CreateMemberPayment request : requests) {
             if (request.getAmount() == null || request.getAmount() <= 0) {
                 throw BusinessException.invalidAmount();
@@ -80,7 +117,6 @@ public class MemberService {
             }
         }
 
-        // 5. Appeler saveAll avec 4 paramètres (memberId, requests, collectivityId, membershipFeeId)
         return paymentRepository.saveAll(memberId, requests, collectivityId, membershipFeeId);
     }
 }

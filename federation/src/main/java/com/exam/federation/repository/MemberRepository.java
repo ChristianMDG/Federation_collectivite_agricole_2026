@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -214,7 +215,6 @@ public class MemberRepository {
         return null;
     }
 
-    // Dans MemberRepository.java
     public String findCollectivityIdByMemberId(String memberId) {
         String sql = "SELECT collectivity_id FROM member WHERE id = ?";
 
@@ -230,4 +230,41 @@ public class MemberRepository {
         }
         return null;
     }
+
+    public LocalDate getRegistrationDate(String memberId) {
+        String sql = "SELECT registration_date FROM member WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDate("registration_date").toLocalDate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    public String getOccupation(String memberId) {
+        if (memberId == null || memberId.isEmpty()) {
+            return null;
+        }
+
+        String sql = "SELECT occupation FROM member WHERE id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, memberId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("occupation");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
 }
