@@ -490,21 +490,14 @@ VALUES ('act-7', 'col-3', 'Formation de base', 'TRAINING', 'JUNIOR', 4, 'WE', NU
 
 
 -- ============================================================
--- PRÉSENCES AUX ACTIVITÉS (DONNÉES BONUS)
+-- PRÉSENCES AUX ACTIVITÉS (DONNÉES BONUS) - CORRIGÉ
 -- ============================================================
 
--- COLLECTIVITÉ 1 - AG1 Mars 2026
-INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
-                                                                              ('act-1', 'C1-M1', 'ATTENDED'),
-                                                                              ('act-1', 'C1-M2', 'ATTENDED'),
-                                                                              ('act-1', 'C1-M3', 'ATTENDED'),
-                                                                              ('act-1', 'C1-M4', 'ATTENDED'),
-                                                                              ('act-1', 'C1-M5', 'ATTENDED'),
-                                                                              ('act-1', 'C1-M6', 'ATTENDED'),
-                                                                              ('act-1', 'C1-M7', 'MISSING'),
-                                                                              ('act-1', 'C1-M8', 'MISSING');
+-- Nettoyer les présences existantes pour ces activités
+DELETE FROM member_attendance WHERE activity_id IN ('act-1', 'act-3', 'act-5', 'act-6');
 
--- COLLECTIVITÉ 1 - AG1 Avril 2026
+-- COLLECTIVITÉ 1 - AG1 (garder seulement Avril car plus récent selon BONUS?)
+-- Tableau 25 (Avril) : C1-M1, M2, M5, M6, M7, M8 présents ; M3, M4 absents
 INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
                                                                               ('act-1', 'C1-M1', 'ATTENDED'),
                                                                               ('act-1', 'C1-M2', 'ATTENDED'),
@@ -515,18 +508,8 @@ INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
                                                                               ('act-1', 'C1-M7', 'ATTENDED'),
                                                                               ('act-1', 'C1-M8', 'ATTENDED');
 
--- COLLECTIVITÉ 2 - AG2 Mars 2026
-INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
-                                                                              ('act-3', 'C1-M1', 'ATTENDED'),
-                                                                              ('act-3', 'C1-M2', 'ATTENDED'),
-                                                                              ('act-3', 'C1-M3', 'MISSING'),
-                                                                              ('act-3', 'C1-M4', 'MISSING'),
-                                                                              ('act-3', 'C1-M5', 'ATTENDED'),
-                                                                              ('act-3', 'C1-M6', 'ATTENDED'),
-                                                                              ('act-3', 'C1-M7', 'ATTENDED'),
-                                                                              ('act-3', 'C1-M8', 'ATTENDED');
-
--- COLLECTIVITÉ 2 - AG2 Avril 2026
+-- COLLECTIVITÉ 2 - AG2 (garder seulement Avril)
+-- Tableau 27 (Avril) : C1-M1, M2, M4, M5, M6, M7 présents ; M3, M8 absents
 INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
                                                                               ('act-3', 'C1-M1', 'ATTENDED'),
                                                                               ('act-3', 'C1-M2', 'ATTENDED'),
@@ -537,25 +520,15 @@ INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
                                                                               ('act-3', 'C1-M7', 'ATTENDED'),
                                                                               ('act-3', 'C1-M8', 'MISSING');
 
--- COLLECTIVITÉ 2 - Perfectionnement
+-- COLLECTIVITÉ 2 - Perfectionnement (Tableau 28)
 INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
                                                                               ('act-5', 'C1-M1', 'ATTENDED'),
                                                                               ('act-5', 'C1-M2', 'ATTENDED'),
                                                                               ('act-5', 'C1-M3', 'ATTENDED'),
                                                                               ('act-5', 'C1-M4', 'MISSING');
 
--- COLLECTIVITÉ 3 - AG3 Mars 2026
-INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
-                                                                              ('act-6', 'C3-M1', 'ATTENDED'),
-                                                                              ('act-6', 'C3-M2', 'ATTENDED'),
-                                                                              ('act-6', 'C3-M3', 'ATTENDED'),
-                                                                              ('act-6', 'C3-M4', 'ATTENDED'),
-                                                                              ('act-6', 'C3-M5', 'ATTENDED'),
-                                                                              ('act-6', 'C3-M6', 'ATTENDED'),
-                                                                              ('act-6', 'C3-M7', 'MISSING'),
-                                                                              ('act-6', 'C3-M8', 'MISSING');
-
--- COLLECTIVITÉ 3 - AG3 Avril 2026
+-- COLLECTIVITÉ 3 - AG3 (garder seulement Avril)
+-- Tableau 30 (Avril) : C3-M1, M2, M5, M6, M8 présents ; M3, M4, M7 absents + C1-M1 présent
 INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
                                                                               ('act-6', 'C3-M1', 'ATTENDED'),
                                                                               ('act-6', 'C3-M2', 'ATTENDED'),
@@ -566,5 +539,3 @@ INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
                                                                               ('act-6', 'C3-M7', 'MISSING'),
                                                                               ('act-6', 'C3-M8', 'ATTENDED'),
                                                                               ('act-6', 'C1-M1', 'ATTENDED');
-
-
