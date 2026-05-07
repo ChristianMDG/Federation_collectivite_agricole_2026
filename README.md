@@ -1,11 +1,11 @@
 # Agricultural Federation API
 
-## 📋 Description
+## Description
 
 API REST pour la gestion d'une fédération de collectivités agricoles à Madagascar.  
 Cette application permet de gérer les collectivités agricoles, leurs membres, les cotisations, les paiements, les activités et l'assiduité.
 
-## 🚀 Technologies utilisées
+## Technologies utilisées
 
 - **Java 17** - Langage de programmation
 - **Spring Boot 3.x** - Framework principal
@@ -13,14 +13,14 @@ Cette application permet de gérer les collectivités agricoles, leurs membres, 
 - **Maven** - Gestionnaire de dépendances
 - **Lombok** - Réduction du code boilerplate
 
-## 📦 Prérequis
+## Prérequis
 
 - Java 17 ou supérieur
 - PostgreSQL 14 ou supérieur
 - Maven 3.8+
 - Postman (pour les tests)
 
-## 🔧 Installation
+## Installation
 
 ### 1. Cloner le repository
 
@@ -63,7 +63,7 @@ mvn spring-boot:run
 
 L'application démarre sur `http://localhost:8080`
 
-## 🔐 Sécurité
+## Sécurité
 
 Tous les endpoints sont protégés par une clé API.  
 Chaque requête doit inclure l'en-tête suivant :
@@ -78,7 +78,7 @@ x-api-key: agri-secure-key
 | Mauvaise clé API | 401 | Bad credentials |
 | Clé API correcte | 200 | Accès normal |
 
-## 📚 Endpoints API
+## Endpoints API
 
 ### Collectivités
 
@@ -110,7 +110,7 @@ x-api-key: agri-secure-key
 | POST | `/members` | Adhésion de nouveaux membres |
 | POST | `/members/{id}/payments` | Créer des paiements |
 
-## 📝 Exemples de requêtes
+## Exemples de requêtes
 
 ### Créer une collectivité
 
@@ -183,7 +183,7 @@ GET http://localhost:8080/collectivites/col-1/statistics?from=2026-01-01&to=2026
 x-api-key: agri-secure-key
 ```
 
-## 📊 Codes de réponse
+## Codes de réponse
 
 | Code | Signification |
 |------|---------------|
@@ -195,7 +195,7 @@ x-api-key: agri-secure-key
 | 409 | Conflit (nom ou numéro déjà existant) |
 | 500 | Erreur interne du serveur |
 
-## 🗂️ Structure du projet
+## Structure du projet
 
 ```
 src/main/java/com/exam/federation/
@@ -209,7 +209,7 @@ src/main/java/com/exam/federation/
 └── enums/                 # Énumérations
 ```
 
-## 🧪 Tests avec Postman
+## Tests avec Postman
 
 1. **Importer la collection** : `Agricultural_Federation_API.postman_collection.json`
 2. **Configurer l'environnement** :
@@ -252,14 +252,14 @@ src/main/java/com/exam/federation/
 - Pourcentage de membres à jour
 - Nombre de nouveaux adhérents
 
-## 👥 Auteur
+## Auteur
 
 - **Nom** : Christian MDG
 - **Nom** : Lahatra Nomena
 - **Projet** : PROG3 - Implémentation d'API REST
 - **Année** : 2025-2026
 
-## 📅 Version
+## Version
 
 **Version actuelle : 0.0.7**
 
@@ -271,16 +271,15 @@ src/main/java/com/exam/federation/
 - v0.0.6 (2026-05-05) : Activités et assiduité
 - v0.0.7 (2026-05-05) : Assiduité dans les statistiques
 
-## 🔒 Sécurité ajoutée (2026-05-07)
+## Sécurité ajoutée (2026-05-07)
 
 - Protection par clé API
 - En-tête requis : `x-api-key: agri-secure-key`
 
-## 📞 Support
+## Support
 
 Pour toute question, ouvrez une issue sur le repository GitHub.
 
 ---
+**Bon test !** 
 
-**Bon test !** 🚀
-```
