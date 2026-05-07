@@ -397,3 +397,10 @@ SELECT fa.id, fa.amount, fa.updated_at
 FROM financial_account fa
 WHERE fa.id IN ('C1-A-CASH', 'C1-A-MOBILE-1', 'C2-A-CASH', 'C2-A-MOBILE-1',
                 'C3-A-CASH', 'C3-A-BANK-1', 'C3-A-BANK-2', 'C3-A-MOBILE-1');
+
+
+-- Vérifier la date d'enregistrement des membres
+SELECT id, firstname, lastname, registration_date
+FROM member
+WHERE id IN ('C1-M1', 'C1-M2', 'C1-M3', 'C1-M4', 'C1-M5', 'C1-M6', 'C1-M7', 'C1-M8', 'C1-NEW-1', 'C1-NEW-2')
+ORDER BY registration_date;

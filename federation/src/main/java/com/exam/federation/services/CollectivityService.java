@@ -2,7 +2,6 @@ package com.exam.federation.services;
 
 import com.exam.federation.Exception.BusinessException;
 import com.exam.federation.dto.*;
-
 import com.exam.federation.entity.CreateCollectivityStructure;
 import com.exam.federation.entity.MembershipFee;
 import com.exam.federation.repository.*;
@@ -23,7 +22,6 @@ public class CollectivityService {
     private final CollectivityTransactionRepository transactionRepository;
     private final FinancialAccountRepository financialAccountRepository;
 
-
     public List<CollectivityResponse> saveAll(List<CreateCollectivityRequest> requests) {
         List<CollectivityResponse> responses = new ArrayList<>();
         for (CreateCollectivityRequest request : requests) {
@@ -37,8 +35,32 @@ public class CollectivityService {
             throw BusinessException.federationApprovalMissing();
         }
 
+
         if (request.getStructure() == null) {
             throw BusinessException.structureMissing();
+        }
+
+
+        if (request.getLocation() == null || request.getLocation().isEmpty()) {
+            throw new BusinessException(400, "Location is required");
+        }
+
+        if (request.getMembers() == null || request.getMembers().size() < 10) {
+            throw new BusinessException(400, "A collectivity must have at least 10 members");
+        }
+
+        LocalDate sixMonthsAgo = LocalDate.now().minusMonths(6);
+        long seniorMembersCount = 0;
+
+        for (String memberId : request.getMembers()) {
+            LocalDate registrationDate = memberRepository.getRegistrationDate(memberId);
+            if (registrationDate != null && registrationDate.isBefore(sixMonthsAgo)) {
+                seniorMembersCount++;
+            }
+        }
+
+        if (seniorMembersCount < 5) {
+            throw new BusinessException(400, "At least 5 members must have seniority of at least 6 months");
         }
 
         for (String memberId : request.getMembers()) {
@@ -48,6 +70,7 @@ public class CollectivityService {
         }
 
         CreateCollectivityStructure s = request.getStructure();
+
         if (!memberRepository.existsById(s.getPresident())) {
             throw BusinessException.memberNotFound(s.getPresident());
         }
@@ -63,6 +86,7 @@ public class CollectivityService {
 
         return collectivityRepository.save(request);
     }
+
 
     public CollectivityResponse assignIdentification(String id, AssignIdentificationRequest request) {
         CollectivityResponse existing = collectivityRepository.findById(id);
@@ -128,22 +152,18 @@ public class CollectivityService {
         return transactionRepository.findByCollectivityIdAndDateRange(id, from, to);
     }
 
-
     public List<FinancialAccount> getFinancialAccounts(String collectivityId) {
         if (collectivityRepository.findById(collectivityId) == null) {
             throw BusinessException.collectivityNotFound(collectivityId);
         }
-
         return financialAccountRepository.findByCollectivityId(collectivityId);
     }
+
     public CollectivityResponse findById(String id) {
         CollectivityResponse collectivity = collectivityRepository.findById(id);
-
         if (collectivity == null) {
             throw BusinessException.collectivityNotFound(id);
         }
-
         return collectivity;
-
     }
 }
