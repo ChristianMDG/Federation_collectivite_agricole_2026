@@ -1,4 +1,3 @@
-```markdown
 # Agricultural Federation API
 
 ## 📋 Description
