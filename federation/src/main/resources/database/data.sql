@@ -3,6 +3,7 @@
 -- ============================================================
 
 -- Supprimer toutes les données existantes
+TRUNCATE TABLE member_attendance CASCADE;
 TRUNCATE TABLE collectivity_transaction CASCADE;
 TRUNCATE TABLE member_payment CASCADE;
 TRUNCATE TABLE collectivity_financial_account CASCADE;
@@ -25,21 +26,21 @@ ALTER SEQUENCE transaction_id_seq RESTART WITH 1000;
 ALTER SEQUENCE member_payment_id_seq RESTART WITH 1000;
 ALTER SEQUENCE financial_account_id_seq RESTART WITH 1000;
 ALTER SEQUENCE activity_id_seq RESTART WITH 1000;
+ALTER SEQUENCE attendance_id_seq RESTART WITH 1000;
 
 -- ============================================================
--- TABLEAU 1 : COLLECTIVITÉS (3 collectivités)
+-- TABLEAU 1 : COLLECTIVITÉS
 -- ============================================================
-
 INSERT INTO collectivity (id, number, name, location, speciality)
 VALUES
     ('col-1', '1', 'Mpanorina', 'Ambatondrazaka', 'Riziculture'),
     ('col-2', '2', 'Dobo voalohany', 'Ambatondrazaka', 'Pisciculture'),
     ('col-3', '3', 'Tantely mamy', 'Brickaville', 'Apiculture');
 
+
 -- ============================================================
 -- TABLEAU 2 : MEMBRES COLLECTIVITÉ 1
 -- ============================================================
-
 INSERT INTO member (id, firstname, lastname, birthday, gender, address, profession, phone_number, email, registration_date, occupation, collectivity_id)
 VALUES
     ('C1-M1', 'Prénom membre 1', 'Nom membre 1', '1980-02-01', 'MALE', 'Lot II V M Ambato.', 'Riziculteur', 341234567, 'member.1@fed-agri.mg', '2026-01-01', 'PRESIDENT', 'col-1'),
@@ -73,6 +74,7 @@ UPDATE collectivity SET
                         treasurer_id = 'C1-M4'
 WHERE id = 'col-1';
 
+
 -- ============================================================
 -- TABLEAU 3 : MEMBRES COLLECTIVITÉ 2 (mêmes membres que C1)
 -- ============================================================
@@ -90,10 +92,10 @@ UPDATE collectivity SET
                         treasurer_id = 'C1-M8'
 WHERE id = 'col-2';
 
+
 -- ============================================================
 -- TABLEAU 4 : MEMBRES COLLECTIVITÉ 3
 -- ============================================================
-
 INSERT INTO member (id, firstname, lastname, birthday, gender, address, profession, phone_number, email, registration_date, occupation, collectivity_id)
 VALUES
     ('C3-M1', 'Prénom membre 9', 'Nom membre 9', '1988-01-02', 'MALE', 'Lot 33 J Antsirabe', 'Apiculteur', 34034567, 'member.9@fed-agri.mg', '2026-01-01', 'PRESIDENT', 'col-3'),
@@ -127,6 +129,7 @@ UPDATE collectivity SET
                         treasurer_id = 'C3-M4'
 WHERE id = 'col-3';
 
+
 -- ============================================================
 -- COMPTES FINANCIERS DES COLLECTIVITÉS
 -- ============================================================
@@ -153,20 +156,13 @@ INSERT INTO cash_account (id) VALUES ('C3-A-CASH');
 INSERT INTO collectivity_financial_account (collectivity_id, financial_account_id) VALUES
     ('col-3', 'C3-A-CASH');
 
--- ============================================================
 
 -- ============================================================
--- NOUVELLES DONNÉES À INSÉRER APRÈS LES ANCIENNES
--- ============================================================
-
--- ============================================================
--- 1. NOUVEAUX COMPTES FINANCIERS POUR LA COLLECTIVITÉ 3
+-- NOUVEAUX COMPTES FINANCIERS POUR LA COLLECTIVITÉ 3
 -- ============================================================
 
 -- Comptes bancaires
-INSERT INTO financial_account (id, amount) VALUES
-                                               ('C3-A-BANK-1', 0),
-                                               ('C3-A-BANK-2', 0);
+INSERT INTO financial_account (id, amount) VALUES ('C3-A-BANK-1', 0), ('C3-A-BANK-2', 0);
 
 INSERT INTO bank_account (id, holder_name, bank_name, bank_code, bank_branch_code, bank_account_number, bank_account_key)
 VALUES
@@ -184,8 +180,9 @@ INSERT INTO collectivity_financial_account (collectivity_id, financial_account_i
                                                                                        ('col-3', 'C3-A-BANK-2'),
                                                                                        ('col-3', 'C3-A-MOBILE-1');
 
+
 -- ============================================================
--- 2. COTISATIONS (MEMBERSHIP FEES)
+-- COTISATIONS (MEMBERSHIP FEES)
 -- ============================================================
 
 -- Collectivité 1
@@ -202,11 +199,11 @@ INSERT INTO membership_fee (id, collectivity_id, label, status, frequency, eligi
 INSERT INTO membership_fee (id, collectivity_id, label, status, frequency, eligible_from, amount) VALUES
     ('cot-5', 'col-3', 'Cotisation mensuelle', 'ACTIVE', 'MONTHLY', '2026-04-01', 25000.00);
 
+
 -- ============================================================
--- 3. PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 1
+-- PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 1
 -- ============================================================
 
--- Paiements
 INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date) VALUES
                                                                                                                             ('mp-c1-1', 'C1-M1', 'cot-1', 'C1-A-CASH', 200000.00, 'CASH', '2026-01-01'),
                                                                                                                             ('mp-c1-2', 'C1-M2', 'cot-1', 'C1-A-CASH', 200000.00, 'CASH', '2026-01-01'),
@@ -217,7 +214,6 @@ INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_i
                                                                                                                             ('mp-c1-7', 'C1-M7', 'cot-1', 'C1-A-CASH', 60000.00, 'CASH', '2026-05-01'),
                                                                                                                             ('mp-c1-8', 'C1-M8', 'cot-1', 'C1-A-CASH', 90000.00, 'CASH', '2026-05-01');
 
--- Transactions
 INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date) VALUES
                                                                                                                                                        ('tr-c1-1', 'col-1', 'C1-M1', 'cot-1', 'C1-A-CASH', 200000.00, 'CASH', '2026-01-01'),
                                                                                                                                                        ('tr-c1-2', 'col-1', 'C1-M2', 'cot-1', 'C1-A-CASH', 200000.00, 'CASH', '2026-01-01'),
@@ -232,11 +228,11 @@ INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership
 UPDATE financial_account SET amount = 650000.00, updated_at = CURRENT_TIMESTAMP WHERE id = 'C1-A-CASH';
 UPDATE financial_account SET amount = 550000.00, updated_at = CURRENT_TIMESTAMP WHERE id = 'C1-A-MOBILE-1';
 
+
 -- ============================================================
--- 4. PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 2
+-- PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 2
 -- ============================================================
 
--- Paiements
 INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date) VALUES
                                                                                                                             ('mp-c2-1', 'C1-M1', 'cot-3', 'C2-A-CASH', 120000.00, 'CASH', '2026-01-01'),
                                                                                                                             ('mp-c2-2', 'C1-M2', 'cot-3', 'C2-A-CASH', 180000.00, 'CASH', '2026-01-01'),
@@ -247,7 +243,6 @@ INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_i
                                                                                                                             ('mp-c2-7', 'C1-M7', 'cot-3', 'C2-A-MOBILE-1', 80000.00, 'MOBILE_BANKING', '2026-01-01'),
                                                                                                                             ('mp-c2-8', 'C1-M8', 'cot-3', 'C2-A-MOBILE-1', 120000.00, 'MOBILE_BANKING', '2026-01-01');
 
--- Transactions
 INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date) VALUES
                                                                                                                                                        ('tr-c2-1', 'col-2', 'C1-M1', 'cot-3', 'C2-A-CASH', 120000.00, 'CASH', '2026-01-01'),
                                                                                                                                                        ('tr-c2-2', 'col-2', 'C1-M2', 'cot-3', 'C2-A-CASH', 180000.00, 'CASH', '2026-01-01'),
@@ -262,11 +257,11 @@ INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership
 UPDATE financial_account SET amount = 1100000.00, updated_at = CURRENT_TIMESTAMP WHERE id = 'C2-A-CASH';
 UPDATE financial_account SET amount = 200000.00, updated_at = CURRENT_TIMESTAMP WHERE id = 'C2-A-MOBILE-1';
 
+
 -- ============================================================
--- 5. PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 3 (AVRIL 2026)
+-- PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 3 (AVRIL 2026)
 -- ============================================================
 
--- Paiements avril 2026
 INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date) VALUES
                                                                                                                             ('mp-c3-apr-1', 'C3-M1', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
                                                                                                                             ('mp-c3-apr-2', 'C3-M2', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
@@ -277,7 +272,6 @@ INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_i
                                                                                                                             ('mp-c3-apr-7', 'C3-M7', 'cot-5', 'C3-A-CASH', 25000.00, 'CASH', '2026-04-01'),
                                                                                                                             ('mp-c3-apr-8', 'C3-M8', 'cot-5', 'C3-A-CASH', 25000.00, 'CASH', '2026-04-01');
 
--- Transactions avril 2026
 INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date) VALUES
                                                                                                                                                        ('tr-c3-apr-1', 'col-3', 'C3-M1', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
                                                                                                                                                        ('tr-c3-apr-2', 'col-3', 'C3-M2', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-04-01'),
@@ -288,11 +282,11 @@ INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership
                                                                                                                                                        ('tr-c3-apr-7', 'col-3', 'C3-M7', 'cot-5', 'C3-A-CASH', 25000.00, 'CASH', '2026-04-01'),
                                                                                                                                                        ('tr-c3-apr-8', 'col-3', 'C3-M8', 'cot-5', 'C3-A-CASH', 25000.00, 'CASH', '2026-04-01');
 
+
 -- ============================================================
--- 6. PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 3 (MAI 2026)
+-- PAIEMENTS ET TRANSACTIONS COLLECTIVITÉ 3 (MAI 2026)
 -- ============================================================
 
--- Paiements mai 2026
 INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date) VALUES
                                                                                                                             ('mp-c3-may-1', 'C3-M1', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
                                                                                                                             ('mp-c3-may-2', 'C3-M2', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
@@ -303,7 +297,6 @@ INSERT INTO member_payment (id, member_id, membership_fee_id, account_credited_i
                                                                                                                             ('mp-c3-may-7', 'C3-M7', 'cot-5', 'C3-A-CASH', 5000.00, 'CASH', '2026-05-01'),
                                                                                                                             ('mp-c3-may-8', 'C3-M8', 'cot-5', 'C3-A-CASH', 5000.00, 'CASH', '2026-05-01');
 
--- Transactions mai 2026
 INSERT INTO collectivity_transaction (id, collectivity_id, member_id, membership_fee_id, account_credited_id, amount, payment_mode, creation_date) VALUES
                                                                                                                                                        ('tr-c3-may-1', 'col-3', 'C3-M1', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
                                                                                                                                                        ('tr-c3-may-2', 'col-3', 'C3-M2', 'cot-5', 'C3-A-BANK-1', 25000.00, 'BANK_TRANSFER', '2026-05-01'),
@@ -320,8 +313,9 @@ UPDATE financial_account SET amount = 95000.00, updated_at = CURRENT_TIMESTAMP W
 UPDATE financial_account SET amount = 30000.00, updated_at = CURRENT_TIMESTAMP WHERE id = 'C3-A-MOBILE-1';
 UPDATE financial_account SET amount = 60000.00, updated_at = CURRENT_TIMESTAMP WHERE id = 'C3-A-CASH';
 
+
 -- ============================================================
--- 7. NOUVEAUX MEMBRES JUNIORS
+-- NOUVEAUX MEMBRES JUNIORS
 -- ============================================================
 
 -- Collectivité 1 - 4 nouveaux juniors
@@ -375,32 +369,203 @@ INSERT INTO collectivity_members (collectivity_id, member_id) VALUES
                                                                   ('col-3', 'C3-NEW-1'), ('col-3', 'C3-NEW-2'), ('col-3', 'C3-NEW-3'),
                                                                   ('col-3', 'C3-NEW-4'), ('col-3', 'C3-NEW-5'), ('col-3', 'C3-NEW-6');
 
+
+-- ============================================================
+-- ACTIVITÉS (DONNÉES BONUS)
+-- ============================================================
+
+-- ========== COLLECTIVITÉ 1 ==========
+-- act-1: AG1 (1er samedi de chaque mois)
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act-1',
+           'col-1',
+           'AG1',
+           'MEETING',
+           'JUNIOR,SENIOR,SECRETARY,TREASURER,VICE_PRESIDENT,PRESIDENT',
+           1,
+           'SA',
+           NULL
+       );
+
+-- act-2: Formation de base (2ème dimanche de chaque mois)
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act-2',
+           'col-1',
+           'Formation de base',
+           'TRAINING',
+           'JUNIOR',
+           2,
+           'SU',
+           NULL
+       );
+
+
+-- ========== COLLECTIVITÉ 2 ==========
+-- act-3: AG2 (1er dimanche de chaque mois)
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act-3',
+           'col-2',
+           'AG2',
+           'MEETING',
+           'JUNIOR,SENIOR,SECRETARY,TREASURER,VICE_PRESIDENT,PRESIDENT',
+           1,
+           'SU',
+           NULL
+       );
+
+-- act-4: Formation de base (3ème dimanche de chaque mois)
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act-4',
+           'col-2',
+           'Formation de base',
+           'TRAINING',
+           'JUNIOR',
+           3,
+           'SU',
+           NULL
+       );
+
+-- act-5: Perfectionnement (ponctuelle)
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act-5',
+           'col-2',
+           'Perfectionnement',
+           'TRAINING',
+           'SENIOR',
+           NULL,
+           NULL,
+           '2026-04-30'
+       );
+
+
+-- ========== COLLECTIVITÉ 3 ==========
+-- act-6: AG3 (1er vendredi de chaque mois)
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act-6',
+           'col-3',
+           'AG3',
+           'MEETING',
+           'JUNIOR,SENIOR,SECRETARY,TREASURER,VICE_PRESIDENT,PRESIDENT',
+           1,
+           'FR',
+           NULL
+       );
+
+-- act-7: Formation de base (4ème mercredi de chaque mois)
+INSERT INTO activity (id, collectivity_id, label, activity_type, member_occupation_concerned, recurrence_week_ordinal, recurrence_day_of_week, executive_date)
+VALUES (
+           'act-7',
+           'col-3',
+           'Formation de base',
+           'TRAINING',
+           'JUNIOR',
+           4,
+           'WE',
+           NULL
+       );
+
+
+-- ============================================================
+-- PRÉSENCES AUX ACTIVITÉS (DONNÉES BONUS)
+-- ============================================================
+
+-- ========== COLLECTIVITÉ 1 - AG1 Mars 2026 (act-1 le 07/03/2026) ==========
+-- C1-M1 à C1-M6 présents, C1-M7 et C1-M8 absents
+INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
+                                                                              ('act-1', 'C1-M1', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M2', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M3', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M4', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M5', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M6', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M7', 'MISSING'),
+                                                                              ('act-1', 'C1-M8', 'MISSING');
+
+-- ========== COLLECTIVITÉ 1 - AG1 Avril 2026 (act-1 le 04/04/2026) ==========
+-- C1-M1, C1-M2, C1-M5, C1-M6, C1-M7, C1-M8 présents ; C1-M3, C1-M4 absents
+INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
+                                                                              ('act-1', 'C1-M1', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M2', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M3', 'MISSING'),
+                                                                              ('act-1', 'C1-M4', 'MISSING'),
+                                                                              ('act-1', 'C1-M5', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M6', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M7', 'ATTENDED'),
+                                                                              ('act-1', 'C1-M8', 'ATTENDED');
+
+
+-- ========== COLLECTIVITÉ 2 - AG2 Mars 2026 (act-3 le 08/03/2026) ==========
+INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
+                                                                              ('act-3', 'C1-M1', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M2', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M3', 'MISSING'),
+                                                                              ('act-3', 'C1-M4', 'MISSING'),
+                                                                              ('act-3', 'C1-M5', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M6', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M7', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M8', 'ATTENDED');
+
+-- ========== COLLECTIVITÉ 2 - AG2 Avril 2026 (act-3 le 05/04/2026) ==========
+INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
+                                                                              ('act-3', 'C1-M1', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M2', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M3', 'MISSING'),
+                                                                              ('act-3', 'C1-M4', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M5', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M6', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M7', 'ATTENDED'),
+                                                                              ('act-3', 'C1-M8', 'MISSING');
+
+-- ========== COLLECTIVITÉ 2 - Perfectionnement (act-5 le 30/04/2026) ==========
+INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
+                                                                              ('act-5', 'C1-M1', 'ATTENDED'),
+                                                                              ('act-5', 'C1-M2', 'ATTENDED'),
+                                                                              ('act-5', 'C1-M3', 'ATTENDED'),
+                                                                              ('act-5', 'C1-M4', 'MISSING');
+
+
+-- ========== COLLECTIVITÉ 3 - AG3 Mars 2026 (act-6 le 06/03/2026) ==========
+INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
+                                                                              ('act-6', 'C3-M1', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M2', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M3', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M4', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M5', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M6', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M7', 'MISSING'),
+                                                                              ('act-6', 'C3-M8', 'MISSING');
+
+-- ========== COLLECTIVITÉ 3 - AG3 Avril 2026 (act-6 le 03/04/2026) ==========
+INSERT INTO member_attendance (activity_id, member_id, attendance_status) VALUES
+                                                                              ('act-6', 'C3-M1', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M2', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M3', 'MISSING'),
+                                                                              ('act-6', 'C3-M4', 'MISSING'),
+                                                                              ('act-6', 'C3-M5', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M6', 'ATTENDED'),
+                                                                              ('act-6', 'C3-M7', 'MISSING'),
+                                                                              ('act-6', 'C3-M8', 'ATTENDED'),
+                                                                              ('act-6', 'C1-M1', 'ATTENDED');  -- Membre d'une autre collectivité présent
+
+
 -- ============================================================
 -- VÉRIFICATION FINALE
 -- ============================================================
 
--- Vérifier les cotisations actives
-SELECT id, collectivity_id, label, status, amount FROM membership_fee;
+-- Vérifier les activités
+SELECT id, collectivity_id, label FROM activity ORDER BY collectivity_id;
 
--- Vérifier les paiements par collectivité
+-- Vérifier les présences par collectivité
 SELECT
-    c.name as collectivity,
-    COUNT(mp.id) as nb_payments,
-    SUM(mp.amount) as total_amount
-FROM member_payment mp
-         JOIN member m ON m.id = mp.member_id
-         JOIN collectivity c ON c.id = m.collectivity_id
-GROUP BY c.id, c.name;
-
--- Vérifier les soldes des comptes
-SELECT fa.id, fa.amount, fa.updated_at
-FROM financial_account fa
-WHERE fa.id IN ('C1-A-CASH', 'C1-A-MOBILE-1', 'C2-A-CASH', 'C2-A-MOBILE-1',
-                'C3-A-CASH', 'C3-A-BANK-1', 'C3-A-BANK-2', 'C3-A-MOBILE-1');
-
-
--- Vérifier la date d'enregistrement des membres
-SELECT id, firstname, lastname, registration_date
-FROM member
-WHERE id IN ('C1-M1', 'C1-M2', 'C1-M3', 'C1-M4', 'C1-M5', 'C1-M6', 'C1-M7', 'C1-M8', 'C1-NEW-1', 'C1-NEW-2')
-ORDER BY registration_date;
+    a.collectivity_id,
+    a.label,
+    COUNT(ma.id) as nb_presences
+FROM member_attendance ma
+         JOIN activity a ON a.id = ma.activity_id
+GROUP BY a.collectivity_id, a.label;
